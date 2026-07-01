@@ -46,7 +46,7 @@ export default function Register() {
   }
 
   return (
-    <main className="relative min-h-screen w-full flex flex-col items-center px-4 bg-[#020617] py-24 md:py-32 font-sans overflow-x-clip">
+    <main className="relative min-h-screen w-full flex flex-col items-center px-4 bg-[#020617] pt-32 pb-24 md:pt-40 md:pb-32 font-sans overflow-x-clip">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-600/10 rounded-full blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]" />
 

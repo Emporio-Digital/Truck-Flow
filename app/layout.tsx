@@ -4,6 +4,12 @@ import "./globals.css";
 export const metadata = {
   title: "TruckFlow | Gold Edition",
   description: "A revolução na gestão de frotas",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

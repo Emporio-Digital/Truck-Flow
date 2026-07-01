@@ -51,7 +51,7 @@ export default function Login() {
   }
 
   return (
-    <main className="relative min-h-[100dvh] w-full flex flex-col items-center justify-center px-4 overflow-hidden bg-[#020617] font-sans">
+    <main className="relative min-h-[100dvh] w-full flex flex-col items-center justify-center px-4 overflow-hidden bg-[#020617] font-sans pt-28 md:pt-36">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="relative z-10 w-full max-w-[450px]">
