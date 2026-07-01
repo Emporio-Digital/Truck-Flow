@@ -152,18 +152,19 @@ export default function ProjectReportPage() {
                 onClick={() => setSelectedEntry(entry)}
                 className="h-32 w-full relative bg-white border-l-[10px] border-orange-500 rounded-[32px] flex flex-col justify-between p-4 cursor-pointer active:scale-95 transition-all shadow-2xl text-left hover:shadow-orange-500/10 hover:border-orange-600"
               >
-                {/* 1. Bloco Superior: Tag do Motorista + Horário no Canto (Espaçamento contra sobreposição) */}
-                <div className="flex justify-between items-center w-full">
-                  <div className="bg-slate-100 px-2 py-1 rounded-lg inline-flex items-center gap-1 shadow-sm shrink-0">
-                    <span className="text-[10px] leading-none">👤</span>
-                    <span className="uppercase font-black tracking-wider leading-none" style={{ fontSize: '8px', color: '#64748b' }}>
+                {/* 1. Bloco Superior: Tag do Motorista + Horário Empilhado Verticalmente (Safe para Mobile) */}
+                <div className="flex flex-col items-start gap-1 w-full">
+                  {/* Tag do Nome */}
+                  <div className="bg-slate-100 px-2 py-1 rounded-lg inline-flex items-center gap-1 shadow-sm max-w-full overflow-hidden">
+                    <span className="text-[9px] leading-none">👤</span>
+                    <span className="uppercase font-black tracking-wider leading-none truncate" style={{ fontSize: '8px', color: '#64748b' }}>
                       {entry.driver_name.split(' ')[0]}
                     </span>
                   </div>
                   
-                  {/* Horário Alinhado ao Canto Superior Direito */}
-                  <div className="inline-flex items-center gap-1 shrink-0">
-                    <span className="text-[10px] leading-none">🕒</span>
+                  {/* Horário Logo Abaixo */}
+                  <div className="inline-flex items-center gap-1 pl-1">
+                    <span className="text-[9px] leading-none">🕒</span>
                     <span className="font-bold leading-none" style={{ fontSize: '9px', color: '#94a3b8' }}>
                       {new Date(entry.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                     </span>
