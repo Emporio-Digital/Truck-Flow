@@ -153,7 +153,7 @@ export default function ProjectReportPage() {
                 className="h-32 w-full relative bg-white border-l-[10px] border-orange-500 rounded-[32px] flex flex-col justify-between p-4 cursor-pointer active:scale-95 transition-all shadow-2xl text-left hover:shadow-orange-500/10 hover:border-orange-600"
               >
                 {/* 1. Bloco Superior: Tag do Motorista + Horário Empilhado Verticalmente (Safe para Mobile) */}
-                <div className="flex flex-col items-start gap-1 w-full">
+                <div className="flex flex-col items-start gap-2.5 w-full">
                   {/* Tag do Nome */}
                   <div className="bg-slate-100 px-2 py-1 rounded-lg inline-flex items-center gap-1 shadow-sm max-w-full overflow-hidden">
                     <span className="text-[9px] leading-none">👤</span>
