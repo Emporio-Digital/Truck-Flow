@@ -71,9 +71,12 @@ export default function AdminDashboard() {
       if (prof?.company_id) {
         const start = new Date(selectedYear, selectedMonth, 1).toISOString()
         const end = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59).toISOString()
-        const { data: t } = await supabase.from('trips').select('*').eq('driver_id', user.id).gte('created_at', start).lte('created_at', end)
-        const { data: e } = await supabase.from('expenses').select('*').eq('driver_id', user.id).gte('created_at', start).lte('created_at', end)
+        
+        // Busca os dados filtrando pelo ID da empresa (company_id) para consolidar os dados da frota
+        const { data: t } = await supabase.from('trips').select('*').eq('company_id', prof.company_id).gte('created_at', start).lte('created_at', end)
+        const { data: e } = await supabase.from('expenses').select('*').eq('company_id', prof.company_id).gte('created_at', start).lte('created_at', end)
         const { data: d } = await supabase.from('profiles').select('id').eq('company_id', prof.company_id).eq('role', 'driver')
+        
         setStats({ trips: t?.length || 0, expenses: e?.reduce((acc, curr) => acc + Number(curr.value), 0) || 0, drivers: d?.length || 0 })
         const combined = [...(t || []).map(x => ({...x, kind: 'viagem'})), ...(e || []).map(x => ({...x, kind: 'gasto'}))]
           .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -99,16 +102,18 @@ export default function AdminDashboard() {
     <main className="relative min-h-screen w-full bg-[#020617] text-white pt-10 md:pt-20 px-4 md:px-10 pb-32 overflow-x-hidden">
       <div className="max-w-7xl mx-auto relative z-10">
         
-        {/* Cabeçalho Real */}
-        {/* Cabeçalho com Token */}
-        {/* Header Superior com Menu */}
-        <div className="mb-12 flex items-start justify-between">
-          <div>
-            <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Painel de Gestão</p>
-            <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none">
-              {profile.full_name?.split(' ')[0]}
-              <span className="block text-white/20 text-2xl md:text-4xl not-italic mt-1 font-light tracking-normal">{profile.companies?.name || 'Sem Empresa'}</span>
-            </h1>
+        {/* Faixa Superior Integrada ao Menu (Branding e Ação) */}
+        <div className="-mt-10 md:-mt-20 mb-4 flex items-center justify-between border-b border-white/5 pb-6 pt-6 md:pt-10">
+          <div className="flex items-center gap-4">
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="w-16 h-16 md:w-20 md:h-20 object-contain shrink-0" 
+            />
+            <span className="text-2xl font-black italic tracking-tighter uppercase text-white">
+              TRUCK<span className="text-orange-500">FLOW</span>
+              <span className="text-orange-500 font-extrabold">.</span>
+            </span>
           </div>
 
           <button 
@@ -119,6 +124,14 @@ export default function AdminDashboard() {
             <div className="w-6 h-0.5 bg-orange-500 rounded-full" />
             <div className="w-4 h-0.5 bg-white rounded-full self-end mr-4" />
           </button>
+        </div>
+
+        {/* Identificação da Empresa em Evidência (Sem Nome da Pessoa) */}
+        <div className="mb-12 text-left">
+          <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Painel de Gestão</p>
+          <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none break-words text-white">
+            {profile.companies?.name || 'Sem Empresa'}
+          </h1>
         </div>
 
         {/* Drawer Lateral Padronizado */}
@@ -417,22 +430,22 @@ export default function AdminDashboard() {
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                      <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Origem</p>
+                      <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Origem</p>
                       <p className="font-black uppercase text-sm">{selectedTrip.origin}</p>
                     </div>
                     <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                      <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Destino</p>
+                      <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Destino</p>
                       <p className="font-black uppercase text-sm">{selectedTrip.destination}</p>
                     </div>
                   </div>
 
                   <div className="bg-white/5 p-5 rounded-[32px] border border-white/5 flex items-center justify-between">
                     <div>
-                      <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Material</p>
+                      <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Material</p>
                       <p className="font-black uppercase text-orange-500 italic">{selectedTrip.material}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Data</p>
+                      <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Data</p>
                       <p className="font-black uppercase text-xs">{new Date(selectedTrip.created_at).toLocaleDateString('pt-BR')}</p>
                     </div>
                   </div>
@@ -479,27 +492,27 @@ export default function AdminDashboard() {
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                      <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Categoria</p>
+                      <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Categoria</p>
                       <p className="font-black uppercase text-sm flex items-center gap-1.5">
                         {selectedTrip.type === 'Combustível' ? '⛽' : 
                          selectedTrip.type === 'Borracharia' ? '🛞' : '📦'} {selectedTrip.type}
                       </p>
                     </div>
                     <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                      <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Valor</p>
+                      <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Valor</p>
                       <p className="font-black uppercase text-sm text-orange-500 italic">R$ {Number(selectedTrip.value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </div>
                   </div>
 
                   {selectedTrip.description && (
                     <div className="bg-[#020617]/40 p-5 rounded-[32px] border border-white/5">
-                      <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Observação</p>
+                      <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Observação</p>
                       <p className="font-medium text-xs text-white/80">{selectedTrip.description}</p>
                     </div>
                   )}
 
                   <div className="bg-white/5 p-4 rounded-[24px] border border-white/5 flex justify-between items-center">
-                    <p className="text-[8px] font-black uppercase text-white/30 tracking-widest">Data do Lançamento</p>
+                    <p className="text-[8px] font-black uppercase text-white/70 tracking-widest">Data do Lançamento</p>
                     <p className="font-black uppercase text-xs">{new Date(selectedTrip.created_at).toLocaleDateString('pt-BR')}</p>
                   </div>
 

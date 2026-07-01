@@ -248,22 +248,22 @@ export default function ProjectReportPage() {
             <div className="space-y-6 text-left">
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                  <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Motorista</p>
+                  <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Motorista</p>
                   <p className="font-black uppercase text-sm text-white truncate">{selectedEntry.driver_name}</p>
                 </div>
                 <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                  <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Placa</p>
+                  <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Placa</p>
                   <p className="font-black uppercase text-sm text-orange-500 italic">{selectedEntry.vehicle_plate}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                  <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Tipo de Lançamento</p>
+                  <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Tipo de Lançamento</p>
                   <p className="font-black uppercase text-xs text-white/80">{project?.payment_model || 'Não definido'}</p>
                 </div>
                 <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                  <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Data/Hora</p>
+                  <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Hora/Data</p>
                   <p className="font-black uppercase text-xs text-white/80">
                     {new Date(selectedEntry.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - {new Date(selectedEntry.created_at).toLocaleDateString('pt-BR')}
                   </p>

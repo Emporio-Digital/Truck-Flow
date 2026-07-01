@@ -13,6 +13,7 @@ export default function NewExpenseModal({ userId, companyId, onClose, onSuccess 
   const [loading, setLoading] = useState(false)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [alertMessage, setAlertMessage] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     type: "Combustível",
     value: "",
@@ -36,7 +37,7 @@ export default function NewExpenseModal({ userId, companyId, onClose, onSuccess 
           canvas.height = img.height;
           if (ctx) {
             ctx.drawImage(img, 0, 0);
-            const timestamp = new Date().toLocaleString('pt-BR');
+            const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
             const fontSize = canvas.width * 0.04;
             ctx.font = `bold ${fontSize}px Inter, sans-serif`;
             ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -51,8 +52,8 @@ export default function NewExpenseModal({ userId, companyId, onClose, onSuccess 
   };
 
   const handleSave = async () => {
-    if (!formData.value) return alert("Insira o valor do gasto");
-    if (!selectedImage) return alert("A foto do comprovante é obrigatória");
+    if (!formData.value) return setAlertMessage("Insira o valor do gasto");
+    if (!selectedImage) return setAlertMessage("A foto do comprovante é obrigatória");
     
     setLoading(true);
 
@@ -85,7 +86,7 @@ export default function NewExpenseModal({ userId, companyId, onClose, onSuccess 
       if (error) throw error;
       onSuccess();
     } catch (error: any) {
-      alert(`Erro ao salvar gasto: ${error.message}`);
+      setAlertMessage(`Erro ao salvar gasto: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -182,6 +183,29 @@ export default function NewExpenseModal({ userId, companyId, onClose, onSuccess 
           </div>
         </div>
       </div>
+
+      {/* MODAL DE ALERTA PREMIUM CUSTOMIZADO */}
+      {alertMessage && (
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="glass w-full max-w-sm p-6 rounded-[32px] border border-white/10 shadow-2xl relative text-center text-white animate-in zoom-in-95 duration-200">
+            {/* Ícone Alerta Animado */}
+            <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-bounce">
+              ⚠️
+            </div>
+            
+            <h3 className="text-lg font-black italic uppercase tracking-tighter text-white mb-2">Atenção</h3>
+            <p className="text-white/70 text-xs font-medium leading-relaxed mb-6 italic">{alertMessage}</p>
+            
+            {/* Botão de Fechar */}
+            <button 
+              onClick={() => setAlertMessage(null)}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-black font-black uppercase tracking-[2px] py-4 rounded-2xl text-xs transition-all active:scale-95 shadow-[0_10px_30px_rgba(249,115,22,0.3)]"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

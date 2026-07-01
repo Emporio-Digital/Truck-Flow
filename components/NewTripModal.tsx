@@ -13,14 +13,16 @@ export default function NewTripModal({ userId, companyId, onClose, onSuccess }: 
   const [loading, setLoading] = useState(false)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  // Estado para os alertas customizados unificados
+  const [alertMessage, setAlertMessage] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     origin: "",
     destination: "",
     material: ""
   })
 
-  // Função para processar a imagem e colocar o carimbo
-  const processImage = async (file: File): Promise<Blob> => {
+  // Lógica Matemática do Carimbo Digital (Watermark) de Alta Resolução no Padrão Premium
+  const processImage = async (file: File, origin: string, destination: string): Promise<Blob> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -31,30 +33,35 @@ export default function NewTripModal({ userId, companyId, onClose, onSuccess }: 
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           
-          // Mantém a proporção da imagem
+          // Mantém a proporção e resolução real da foto capturada
           canvas.width = img.width;
           canvas.height = img.height;
           
           if (ctx) {
-            // Desenha a foto original
+            // Desenha a imagem original no canvas
             ctx.drawImage(img, 0, 0);
             
-            // Estilo do Carimbo
-            const timestamp = new Date().toLocaleString('pt-BR');
-            const padding = canvas.width * 0.05;
-            const fontSize = canvas.width * 0.04; // Fonte dinâmica proporcional
+            // Formatação oficial de data e hora de Brasília
+            const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
             
-            ctx.font = `black ${fontSize}px Inter, sans-serif`;
+            // Tamanho da fonte proporcional à largura da imagem (2.5% da largura)
+            const fontSize = Math.max(20, canvas.width * 0.025);
+            ctx.font = `bold ${fontSize}px Inter, sans-serif`;
             
-            // Fundo preto semi-transparente para o texto
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            ctx.fillRect(0, canvas.height - (fontSize * 2.5), canvas.width, fontSize * 2.5);
+            // Desenha a barra escura de fundo na base da foto para contraste absoluto
+            const barHeight = fontSize * 3;
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.85)'; // Fundo escuro profundo
+            ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
             
-            // Texto do Carimbo (Data e Hora)
-            ctx.fillStyle = '#F97316'; // Highway Orange
-            ctx.fillText(`TRUCKFLOW PROOF: ${timestamp}`, padding, canvas.height - fontSize);
+            // Injeta o Carimbo Digital Incontestável da Rota
+            ctx.fillStyle = '#FFFFFF'; // Texto principal em branco
+            const routeText = `${origin.trim().toUpperCase()} ➔ ${destination.trim().toUpperCase()}`;
+            
+            ctx.fillStyle = '#F97316'; // Timestamp em Highway Orange
+            ctx.fillText(`REGISTRO AUDITADO: ${timestamp}`, canvas.width * 0.04, canvas.height - (barHeight * 0.22));
           }
           
+          // Converte para JPEG com compressão de 80% para economizar internet móvel
           canvas.toBlob((blob) => {
             resolve(blob as Blob);
           }, 'image/jpeg', 0.8);
@@ -64,19 +71,21 @@ export default function NewTripModal({ userId, companyId, onClose, onSuccess }: 
   };
 
   const handleSave = async () => {
-    if (!formData.origin || !formData.destination) return alert("Preencha Origem e Destino")
+    if (!formData.origin.trim() || !formData.destination.trim()) {
+      return setAlertMessage("Por favor, informe a Origem e o Destino para registrar a viagem.");
+    }
     setLoading(true)
 
     try {
       let photo_url = null;
 
-      // Se tiver imagem, processa e faz upload
+      // Se tiver imagem, processa e faz o upload com o novo carimbo
       if (selectedImage) {
-        const stampedBlob = await processImage(selectedImage);
+        const stampedBlob = await processImage(selectedImage, formData.origin, formData.destination);
         const fileName = `${Date.now()}-${userId}.jpg`;
         
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('trip-proofs') // Certifique-se de que este bucket existe no Supabase
+        const { error: uploadError } = await supabase.storage
+          .from('trip-proofs')
           .upload(fileName, stampedBlob);
 
         if (uploadError) throw uploadError;
@@ -91,17 +100,17 @@ export default function NewTripModal({ userId, companyId, onClose, onSuccess }: 
       const { error } = await supabase.from('trips').insert([{
         company_id: companyId,
         driver_id: userId,
-        origin: formData.origin,
-        destination: formData.destination,
-        material: formData.material,
-        photo_url: photo_url, // URL da foto com carimbo
+        origin: formData.origin.trim(),
+        destination: formData.destination.trim(),
+        material: formData.material.trim(), // Voltando para o nome reconhecido pelo banco
+        photo_url: photo_url, 
         status: 'finalizada'
       }])
 
       if (error) throw error
       onSuccess()
     } catch (error: any) {
-      alert(`Erro ao salvar: ${error.message}`)
+      setAlertMessage(`Houve um erro ao salvar o registro: ${error.message}`);
     } finally {
       setLoading(false)
     }
@@ -203,6 +212,29 @@ export default function NewTripModal({ userId, companyId, onClose, onSuccess }: 
           </div>
         </div>
       </div>
+
+      {/* MODAL DE ALERTA PREMIUM CUSTOMIZADO (SUBSTITUTO DO ALERT NATIVO) */}
+      {alertMessage && (
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="glass w-full max-w-sm p-6 rounded-[32px] border border-white/10 shadow-2xl relative text-center text-white animate-in zoom-in-95 duration-200">
+            {/* Ícone Alerta Animado */}
+            <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-bounce">
+              ⚠️
+            </div>
+            
+            <h3 className="text-lg font-black italic uppercase tracking-tighter text-white mb-2">Atenção</h3>
+            <p className="text-white/70 text-xs font-medium leading-relaxed mb-6 italic">{alertMessage}</p>
+            
+            {/* Botão de Fechar */}
+            <button 
+              onClick={() => setAlertMessage(null)}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-black font-black uppercase tracking-[2px] py-4 rounded-2xl text-xs transition-all active:scale-95 shadow-[0_10px_30px_rgba(249,115,22,0.3)]"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

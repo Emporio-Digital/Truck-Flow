@@ -10,6 +10,27 @@ export default function MyTeamPage() {
   const [loading, setLoading] = useState(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [selectedTrip, setSelectedTrip] = useState<any>(null)
+  // Estado para a foto em tela cheia (Lightbox)
+  const [activeLightboxUrl, setActiveLightboxUrl] = useState<string | null>(null)
+
+  // Função para forçar o download direto de imagens do Supabase Storage
+  const handleDownloadFile = async (imageUrl: string, filename: string) => {
+    try {
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      
+      const tempLink = document.createElement("a")
+      tempLink.href = blobUrl
+      tempLink.download = filename
+      document.body.appendChild(tempLink)
+      tempLink.click()
+      document.body.removeChild(tempLink)
+      URL.revokeObjectURL(blobUrl)
+    } catch (error) {
+      window.open(imageUrl, "_blank")
+    }
+  }
 
   // Estados dos Filtros
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -259,7 +280,11 @@ export default function MyTeamPage() {
           filteredItems.map((item) => (
             <div 
               key={`${item.kind}-${item.id}`} 
-              onClick={() => setSelectedTrip(item)} 
+              onClick={() => {
+                setIsEmployeeDropdownOpen(false);
+                setIsTypeDropdownOpen(false);
+                setSelectedTrip(item);
+              }} 
               className="relative group active:scale-[0.98] transition-all cursor-pointer mb-4"
             >
               <div 
@@ -337,54 +362,56 @@ export default function MyTeamPage() {
           </div>
         </div>
 
-        {/* MODAL DETALHADO (VIAGEM OU GASTO) */}
-        {selectedTrip && (
-          <div 
-            className="fixed inset-0 z-[500] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300"
-            onClick={() => setSelectedTrip(null)}
-          >
-            <div 
-              className="glass w-full max-w-lg p-6 md:p-8 rounded-[40px] border border-white/10 shadow-2xl relative text-white"
-              onClick={e => e.stopPropagation()}
-            >
+        </div> {/* Fechamento do max-w-7xl original */}
+
+      {/* MINI-EXTRATO (Com animação e correção de Build) */}
+      <div className={`fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-10 bg-black/95 backdrop-blur-xl transition-all duration-500 ${selectedTrip ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`glass w-full max-w-lg p-8 rounded-[40px] border border-white/10 shadow-2xl relative text-white transition-all duration-500 ease-out ${selectedTrip ? 'scale-100 translate-y-0 opacity-100' : 'scale-90 translate-y-10 opacity-0'}`}>
+          {selectedTrip && (
+            <>
               {selectedTrip.kind === 'viagem' ? (
-                /* RESUMO VIAGEM */
+                /* LAYOUT DE RESUMO DE VIAGEM */
                 <>
-                  <div className="flex justify-between items-start mb-8 text-left">
-                    <div>
-                      <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Viagem</h2>
-                      <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Digital • {selectedTrip.driver_name}</p>
-                    </div>
-                    <button onClick={() => setSelectedTrip(null)} className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-white/40 text-xl border border-white/10 hover:text-white transition-all">✕</button>
+                  <div className="mb-8 text-left">
+                    <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Viagem</h2>
+                    <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Digital</p>
                   </div>
 
-                  <div className="space-y-6 text-left">
+                  <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                        <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Origem</p>
+                        <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Origem</p>
                         <p className="font-black uppercase text-sm">{selectedTrip.origin}</p>
                       </div>
                       <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                        <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Destino</p>
+                        <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Destino</p>
                         <p className="font-black uppercase text-sm">{selectedTrip.destination}</p>
                       </div>
                     </div>
 
                     <div className="bg-white/5 p-5 rounded-[32px] border border-white/5 flex items-center justify-between">
                       <div>
-                        <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Material</p>
+                        <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Material</p>
                         <p className="font-black uppercase text-orange-500 italic">{selectedTrip.material}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Data</p>
+                        <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Data</p>
                         <p className="font-black uppercase text-xs">{new Date(selectedTrip.created_at).toLocaleDateString('pt-BR')}</p>
                       </div>
                     </div>
 
                     <div>
                       {selectedTrip.photo_url ? (
-                        <div className="w-full aspect-video rounded-[32px] overflow-hidden border-2 border-white/5">
+                        <div 
+                          onClick={() => setActiveLightboxUrl(selectedTrip.photo_url)}
+                          className="relative group w-full aspect-video rounded-[32px] overflow-hidden border-2 border-white/5 cursor-zoom-in hover:border-orange-500/50 transition-all"
+                        >
                           <img src={selectedTrip.photo_url} className="w-full h-full object-cover" alt="Comprovante" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                            <span className="text-white font-black text-[10px] uppercase tracking-[3px] bg-black/75 border border-white/10 px-5 py-3 rounded-2xl">
+                              🔍 Ampliar Foto
+                            </span>
+                          </div>
                         </div>
                       ) : (
                         <div className="w-full h-32 bg-white/5 rounded-[32px] border border-dashed border-white/10 flex items-center justify-center">
@@ -393,51 +420,64 @@ export default function MyTeamPage() {
                       )}
                     </div>
 
-                    <button onClick={() => setSelectedTrip(null)} className="w-full bg-white text-black font-black uppercase tracking-[2px] py-5 rounded-2xl transition-all active:scale-95 shadow-xl">Fechar Resumo</button>
+                    <button 
+                      onClick={() => {
+                        setSelectedTrip(null);
+                        setActiveLightboxUrl(null);
+                      }} 
+                      className="w-full bg-white text-black font-black uppercase tracking-[2px] py-5 rounded-2xl transition-all active:scale-95 shadow-xl"
+                    >
+                      Fechar Resumo
+                    </button>
                   </div>
                 </>
               ) : (
-                /* RESUMO DESPESA (COM BOTÃO DE DOWNLOAD) */
+                /* LAYOUT DE RESUMO DE DESPESA (NOVO GASTO) */
                 <>
-                  <div className="flex justify-between items-start mb-8 text-left">
-                    <div>
-                      <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Despesa</h2>
-                      <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Financeiro • {selectedTrip.driver_name}</p>
-                    </div>
-                    <button onClick={() => setSelectedTrip(null)} className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-white/40 text-xl border border-white/10 hover:text-white transition-all">✕</button>
+                  <div className="mb-8 text-left">
+                    <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Despesa</h2>
+                    <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Financeiro</p>
                   </div>
 
-                  <div className="space-y-6 text-left">
+                  <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                        <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Categoria</p>
+                        <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Categoria</p>
                         <p className="font-black uppercase text-sm flex items-center gap-1.5">
                           {selectedTrip.type === 'Combustível' ? '⛽' : 
                            selectedTrip.type === 'Borracharia' ? '🛞' : '📦'} {selectedTrip.type}
                         </p>
                       </div>
                       <div className="bg-white/5 p-4 rounded-[24px] border border-white/5">
-                        <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Valor</p>
+                        <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Valor</p>
                         <p className="font-black uppercase text-sm text-orange-500 italic">R$ {Number(selectedTrip.value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       </div>
                     </div>
 
                     {selectedTrip.description && (
-                      <div className="bg-white/5 p-5 rounded-[32px] border border-white/5">
-                        <p className="text-[8px] font-black uppercase text-white/30 tracking-widest mb-1">Observação</p>
+                      <div className="bg-[#020617]/40 p-5 rounded-[32px] border border-white/5">
+                        <p className="text-[8px] font-black uppercase text-white/70 tracking-widest mb-1">Observação</p>
                         <p className="font-medium text-xs text-white/80">{selectedTrip.description}</p>
                       </div>
                     )}
 
                     <div className="bg-white/5 p-4 rounded-[24px] border border-white/5 flex justify-between items-center">
-                      <p className="text-[8px] font-black uppercase text-white/30 tracking-widest">Data do Lançamento</p>
+                      <p className="text-[8px] font-black uppercase text-white/70 tracking-widest">Data do Lançamento</p>
                       <p className="font-black uppercase text-xs">{new Date(selectedTrip.created_at).toLocaleDateString('pt-BR')}</p>
                     </div>
 
                     <div>
                       {selectedTrip.photo_url ? (
-                        <div className="w-full aspect-video rounded-[32px] overflow-hidden border-2 border-white/5">
+                        <div 
+                          onClick={() => setActiveLightboxUrl(selectedTrip.photo_url)}
+                          className="relative group w-full aspect-video rounded-[32px] overflow-hidden border-2 border-white/5 cursor-zoom-in hover:border-orange-500/50 transition-all"
+                        >
                           <img src={selectedTrip.photo_url} className="w-full h-full object-cover" alt="Comprovante de Despesa" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                            <span className="text-white font-black text-[10px] uppercase tracking-[3px] bg-black/75 border border-white/10 px-5 py-3 rounded-2xl">
+                              🔍 Ampliar Foto
+                            </span>
+                          </div>
                         </div>
                       ) : (
                         <div className="w-full h-32 bg-white/5 rounded-[32px] border border-dashed border-white/10 flex items-center justify-center">
@@ -446,26 +486,70 @@ export default function MyTeamPage() {
                       )}
                     </div>
 
-                    <div className="space-y-3 pt-2">
-                      <a 
-                        href={selectedTrip.photo_url} 
-                        download={`comprovante-${selectedTrip.driver_name}-${selectedTrip.type}.jpg`}
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-black font-black uppercase tracking-[2px] py-5 rounded-2xl transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2 text-xs"
-                      >
-                        📥 Baixar Comprovante
-                      </a>
-                      <button onClick={() => setSelectedTrip(null)} className="w-full bg-white/5 text-white/60 font-black uppercase tracking-[2px] py-5 rounded-2xl transition-all active:scale-95 border border-white/10 text-xs">Fechar Resumo</button>
-                    </div>
+                    <button 
+                      onClick={() => {
+                        setSelectedTrip(null);
+                        setActiveLightboxUrl(null);
+                      }} 
+                      className="w-full bg-white text-black font-black uppercase tracking-[2px] py-5 rounded-2xl transition-all active:scale-95 shadow-xl"
+                    >
+                      Fechar Resumo
+                    </button>
                   </div>
                 </>
               )}
+            </>
+          )}
+        </div>
+
+        {/* LIGHTBOX DE FOTO EM TELA CHEIA */}
+        {activeLightboxUrl && (
+          <div 
+            className="absolute inset-0 z-[160] bg-black/98 flex flex-col items-center justify-center p-4 md:p-10 select-none animate-in fade-in duration-300"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveLightboxUrl(null);
+            }}
+          >
+            {/* Botões fixados no topo do viewport */}
+            <div className="absolute top-6 left-6 right-6 z-[170] flex justify-between items-center pointer-events-none">
+              {/* Botão de Fechar (Esquerdo) */}
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setActiveLightboxUrl(null)
+                }}
+                className="pointer-events-auto bg-black/80 hover:bg-black text-white w-14 h-14 rounded-full flex items-center justify-center border border-white/10 shadow-2xl transition-all active:scale-90 text-xl font-black"
+                title="Fechar"
+              >
+                ✕
+              </button>
+
+              {/* Botão de Download (Direito) */}
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDownloadFile(activeLightboxUrl, `comprovante-${selectedTrip?.origin || selectedTrip?.type || 'registro'}.jpg`)
+                }}
+                className="pointer-events-auto bg-[#F97316] hover:bg-orange-600 text-black w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-90 text-2xl font-bold"
+                title="Baixar Imagem"
+              >
+                📥
+              </button>
+            </div>
+
+            {/* Container centralizado da imagem */}
+            <div className="w-full max-w-4xl max-h-[80vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <img 
+                src={activeLightboxUrl} 
+                className="max-w-full max-h-[80vh] object-contain rounded-3xl border border-white/10 shadow-2xl" 
+                alt="Visualização Completa" 
+              />
             </div>
           </div>
         )}
-
       </div>
+
     </main>
   )
 }
