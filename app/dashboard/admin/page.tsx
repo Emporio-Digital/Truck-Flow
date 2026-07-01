@@ -183,8 +183,18 @@ export default function AdminDashboard() {
 
         {/* Stats em Mini-Cards Lado a Lado (Mobile First) */}
         <div className="grid grid-cols-3 gap-3 mb-8">
-          <StatCard title="Viagens" value={stats.trips} unit="total" />
-          <StatCard title="Gastos" value={`R$${stats.expenses}`} color="text-orange-500" />
+          <StatCard title="Viagens Dia" value={stats.trips} unit="total" />
+          
+          {/* Card de Gastos Customizado para Evitar Vazamentos */}
+          <div className="glass p-4 rounded-[24px] border border-white/10 flex flex-col justify-between h-28 text-left overflow-hidden">
+            <p className="text-white/60 text-[8px] font-black uppercase tracking-[2px] leading-tight">Gastos Dia</p>
+            <div className="flex flex-col">
+              <span className="text-base sm:text-xl md:text-2xl font-black italic tracking-tighter leading-none text-orange-500 truncate" title={`R$${stats.expenses}`}>
+                R${stats.expenses}
+              </span>
+            </div>
+          </div>
+
           <StatCard title="Equipe" value={stats.drivers} unit="membros" />
         </div>
 
