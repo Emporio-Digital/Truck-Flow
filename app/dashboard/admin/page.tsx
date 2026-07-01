@@ -72,9 +72,11 @@ export default function AdminDashboard() {
         const start = new Date(selectedYear, selectedMonth, 1).toISOString()
         const end = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59).toISOString()
         
-        // Busca os dados filtrando pelo ID da empresa (company_id) para consolidar os dados da frota
-        const { data: t } = await supabase.from('trips').select('*').eq('company_id', prof.company_id).gte('created_at', start).lte('created_at', end)
-        const { data: e } = await supabase.from('expenses').select('*').eq('company_id', prof.company_id).gte('created_at', start).lte('created_at', end)
+        // Busca as viagens e gastos APENAS do patrão logado (driver_id = user.id)
+        const { data: t } = await supabase.from('trips').select('*').eq('company_id', prof.company_id).eq('driver_id', user.id).gte('created_at', start).lte('created_at', end)
+        const { data: e } = await supabase.from('expenses').select('*').eq('company_id', prof.company_id).eq('driver_id', user.id).gte('created_at', start).lte('created_at', end)
+        
+        // A contagem da equipe (mini-card) continua puxando todos os motoristas da empresa
         const { data: d } = await supabase.from('profiles').select('id').eq('company_id', prof.company_id).eq('role', 'driver')
         
         setStats({ trips: t?.length || 0, expenses: e?.reduce((acc, curr) => acc + Number(curr.value), 0) || 0, drivers: d?.length || 0 })
