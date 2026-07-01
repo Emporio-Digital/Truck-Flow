@@ -125,14 +125,18 @@ export default function MyTeamPage() {
     <main className="min-h-screen w-full bg-[#020617] text-white pt-10 md:pt-20 px-4 md:px-10 pb-32 overflow-x-hidden">
       <div className="max-w-7xl mx-auto relative z-10">
         
-        {/* Cabeçalho */}
-        <div className="mb-12 flex items-start justify-between">
-          <div>
-            <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Controle de Equipe</p>
-            <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none">
-              Minha <span className="text-orange-500">Equipe</span>
-              <span className="block text-white/20 text-2xl md:text-4xl not-italic mt-1 font-light tracking-normal">{profile?.companies?.name || 'Sem Empresa'}</span>
-            </h1>
+        {/* Faixa Superior Integrada ao Menu (Branding e Ação) */}
+        <div className="-mt-10 md:-mt-20 mb-4 flex items-center justify-between border-b border-white/5 pb-6 pt-6 md:pt-10">
+          <div className="flex items-center gap-4">
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="w-20 h-20 md:w-24 md:h-24 object-contain shrink-0" 
+            />
+            <span className="text-2xl font-black italic tracking-tighter uppercase text-white">
+              TRUCK<span className="text-orange-500">FLOW</span>
+              <span className="text-orange-500 font-extrabold">.</span>
+            </span>
           </div>
 
           <button 
@@ -143,6 +147,14 @@ export default function MyTeamPage() {
             <div className="w-6 h-0.5 bg-orange-500 rounded-full" />
             <div className="w-4 h-0.5 bg-white rounded-full self-end mr-4" />
           </button>
+        </div>
+
+        {/* Identificação da Empresa em Evidência */}
+        <div className="mb-12 text-left">
+          <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Controle de Equipe</p>
+          <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none break-words text-white">
+            {profile?.companies?.name || 'Sem Empresa'}
+          </h1>
         </div>
 
         {/* Estatísticas Dinâmicas */}
