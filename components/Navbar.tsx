@@ -4,16 +4,17 @@ import { useState } from "react"
 import Link from "next/link"
 
 export default function Navbar() {
-    const pathname = usePathname()
-  // Se o caminho começar com /dashboard, não renderiza nada
-  if (pathname.startsWith('/dashboard')) return null
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
+
+  // Se o caminho começar com /dashboard, não renderiza a Navbar (o dashboard usa o cabeçalho interno)
+  if (pathname.startsWith('/dashboard')) return null
 
   return (
     <header className="fixed top-0 w-full z-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto flex items-center justify-between glass px-6 md:px-8 py-3 md:py-4 rounded-2xl border border-white/10 relative">
+      <div className="max-w-7xl mx-auto flex items-center justify-between bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-6 py-4 relative">
         
-        {/* LOGO (Sempre visível - Padronizado) */}
+        {/* LOGO E TIPOGRAFIA PADRONIZADOS */}
         <Link href="/" className="flex items-center gap-4 group z-[60]">
           <img 
             src="/logo.png" 
@@ -26,7 +27,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* LINKS CENTRAIS (Desktop) */}
+        {/* LINKS CENTRAIS (Desktop - Windows) */}
         <nav className="hidden md:flex items-center gap-8 text-[11px] font-black uppercase tracking-[2px] text-white/50">
           <Link href="/" className="hover:text-white transition-colors">Início</Link>
           <Link href="/sobre" className="hover:text-white transition-colors">Sobre</Link>
@@ -36,17 +37,17 @@ export default function Navbar() {
           </button>
         </nav>
 
-        {/* BOTÕES DE AÇÃO (Desktop) */}
+        {/* BOTÕES DE AÇÃO (Desktop - Windows) */}
         <div className="hidden md:flex items-center gap-4">
           <Link href="/login" className="text-[11px] font-black uppercase tracking-[2px] text-white/70 hover:text-white transition-all">
             Entrar
           </Link>
-          <Link href="/register" className="bg-orange-500 text-black px-6 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-widest glow-orange hover:scale-105 transition-all">
+          <Link href="/register" className="bg-orange-500 text-black px-6 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-widest hover:scale-105 transition-all">
             Obter Licença
           </Link>
         </div>
 
-        {/* BOTÃO HAMBÚRGUER (Mobile - Padronizado com o App) */}
+        {/* BOTÃO HAMBÚRGUER (Mobile - Idêntico ao Painel Interno) */}
         <button 
           onClick={() => setIsOpen(!isOpen)}
           className="md:hidden z-[60] w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/10 transition-all active:scale-90"
@@ -64,8 +65,8 @@ export default function Navbar() {
 
         {/* MENU MOBILE (DROPDOWN GLASS) */}
         {isOpen && (
-          <div className="absolute top-[110%] left-0 w-full bg-[#0a0f1e] rounded-[24px] p-8 flex flex-col items-center gap-8 md:hidden animate-in fade-in slide-in-from-top-5 duration-300 z-50 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-            <nav className="flex flex-col items-center gap-6 text-[13px] font-black uppercase tracking-[3px] text-white/40 w-full">
+          <div className="absolute top-[110%] left-0 w-full bg-[#020617] rounded-[24px] p-8 flex flex-col items-center gap-8 md:hidden animate-in fade-in slide-in-from-top-5 duration-300 z-50 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+            <nav className="flex flex-col items-center gap-6 text-[13px] font-black uppercase tracking-[3px] text-white/40 w-full text-left">
               <Link href="/" onClick={() => setIsOpen(false)} className="hover:text-orange-500 transition-colors w-full text-center py-2">Início</Link>
               <Link href="/sobre" onClick={() => setIsOpen(false)} className="hover:text-orange-500 transition-colors w-full text-center py-2">Sobre</Link>
               <button className="flex items-center justify-center gap-3 text-green-500 w-full py-2">
@@ -78,7 +79,7 @@ export default function Navbar() {
               <Link href="/login" onClick={() => setIsOpen(false)} className="text-[13px] font-black uppercase tracking-[3px] text-white hover:text-orange-500 transition-all">
                 Entrar no Painel
               </Link>
-              <Link href="/register" onClick={() => setIsOpen(false)} className="w-full bg-orange-500 text-black py-5 rounded-2xl font-black text-[13px] uppercase tracking-[2px] glow-orange text-center active:scale-95 transition-all">
+              <Link href="/register" onClick={() => setIsOpen(false)} className="w-full bg-orange-500 text-black py-5 rounded-2xl font-black text-[13px] uppercase tracking-[2px] text-center active:scale-95 transition-all">
                 Obter Licença Gold
               </Link>
             </div>
