@@ -238,18 +238,10 @@ export default function ProjectReportPage() {
             className="glass w-full max-w-lg p-6 md:p-8 rounded-[40px] border border-white/10 shadow-2xl relative text-white my-8 transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
-            {/* Cabeçalho do Modal */}
-            <div className="flex justify-between items-start mb-8 text-left">
-              <div>
-                <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo do Check-in</h2>
-                <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Prova Visual Terceirizada</p>
-              </div>
-              <button 
-                onClick={() => setSelectedEntry(null)} 
-                className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-white/40 text-xl border border-white/10 hover:text-white transition-all"
-              >
-                ✕
-              </button>
+            {/* Cabeçalho do Modal (Simplificado sem o botão X repetido) */}
+            <div className="mb-8 text-left">
+              <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo do Check-in</h2>
+              <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Prova Visual Terceirizada</p>
             </div>
 
             {/* Conteúdo Detalhado */}
