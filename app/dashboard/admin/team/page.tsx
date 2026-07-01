@@ -165,11 +165,12 @@ export default function MyTeamPage() {
               <span className="text-2xl font-black italic tracking-tighter leading-none text-white">{stats.trips}</span>
             </div>
           </div>
-          <div className="glass p-4 rounded-[24px] border border-white/10 flex flex-col justify-between h-28 text-left">
+          <div className="glass p-4 rounded-[24px] border border-white/10 flex flex-col justify-between h-28 text-left overflow-hidden">
             <p className="text-white/60 text-[8px] font-black uppercase tracking-[2px] leading-tight">Gastos Dia</p>
             <div className="flex flex-col">
-              <span className="text-2xl font-black italic tracking-tighter leading-none text-orange-500">R${stats.expenses.toFixed(2)}</span>
-              
+              <span className="text-base sm:text-xl md:text-2xl font-black italic tracking-tighter leading-none text-orange-500 truncate" title={`R$${stats.expenses.toFixed(2)}`}>
+                R${stats.expenses.toFixed(2)}
+              </span>
             </div>
           </div>
           <div className="glass p-4 rounded-[24px] border border-white/10 flex flex-col justify-between h-28 text-left">
