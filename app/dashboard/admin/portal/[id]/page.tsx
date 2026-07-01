@@ -102,22 +102,39 @@ export default function ProjectReportPage() {
         
         {/* HEADER + FILTRO INTELIGENTE */}
         <div className="mb-10">
-          <div className="flex items-start justify-between mb-8">
-            <div className="text-left">
-              <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Relatório de Campo</p>
-              <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none">
-                {project?.name || 'Obra'}
-              </h1>
+          
+          {/* Faixa Superior Integrada ao Menu (Branding e Ação) */}
+          <div className="-mt-10 md:-mt-20 mb-4 flex items-center justify-between border-b border-white/5 pb-6 pt-6 md:pt-10">
+            <div className="flex items-center gap-4">
+              <img 
+                src="/logo.png" 
+                alt="Logo" 
+                className="w-20 h-20 md:w-24 md:h-24 object-contain shrink-0" 
+              />
+              <span className="text-2xl font-black italic tracking-tighter uppercase text-white">
+                TRUCK<span className="text-orange-500">FLOW</span>
+                <span className="text-orange-500 font-extrabold">.</span>
+              </span>
             </div>
 
             <button 
               onClick={() => setIsMenuOpen(true)}
-              className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center justify-center gap-1.5"
+              className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/10 transition-all active:scale-90"
             >
               <div className="w-6 h-0.5 bg-white rounded-full" />
               <div className="w-6 h-0.5 bg-orange-500 rounded-full" />
               <div className="w-4 h-0.5 bg-white rounded-full self-end mr-4" />
             </button>
+          </div>
+
+          {/* Identificação da Obra (Títulos Preservados) */}
+          <div className="flex items-start justify-between mb-8 text-left">
+            <div className="text-left">
+              <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Relatório de Campo</p>
+              <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none text-white">
+                {project?.name || 'Obra'}
+              </h1>
+            </div>
           </div>
 
           {/* BARRA DE FILTRO NATIVA */}
