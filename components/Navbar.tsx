@@ -13,12 +13,17 @@ export default function Navbar() {
     <header className="fixed top-0 w-full z-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto flex items-center justify-between glass px-6 md:px-8 py-3 md:py-4 rounded-2xl border border-white/10 relative">
         
-        {/* LOGO (Sempre visível) */}
-        <Link href="/" className="flex items-center gap-2 group z-[60]">
-          <div className="w-7 h-7 md:w-8 md:h-8 bg-white/5 rounded-lg flex items-center justify-center border border-white/20 group-hover:border-orange-500/50 transition-all">
-            <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-orange-500 rotate-45" />
-          </div>
-          <span className="font-black tracking-tighter text-lg md:text-xl">TRUCK<span className="text-orange-500 font-medium">FLOW.</span></span>
+        {/* LOGO (Sempre visível - Padronizado) */}
+        <Link href="/" className="flex items-center gap-4 group z-[60]">
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            className="w-20 h-20 md:w-24 md:h-24 object-contain shrink-0" 
+          />
+          <span className="text-2xl font-black italic tracking-tighter uppercase text-white">
+            TRUCK<span className="text-orange-500">FLOW</span>
+            <span className="text-orange-500 font-extrabold">.</span>
+          </span>
         </Link>
 
         {/* LINKS CENTRAIS (Desktop) */}
@@ -41,15 +46,19 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* BOTÃO HAMBÚRGUER (Mobile) */}
+        {/* BOTÃO HAMBÚRGUER (Mobile - Padronizado com o App) */}
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden z-[60] p-2 text-white/70 hover:text-white"
+          className="md:hidden z-[60] w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/10 transition-all active:scale-90"
         >
           {isOpen ? (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span className="text-white text-lg font-black">✕</span>
           ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+            <>
+              <div className="w-6 h-0.5 bg-white rounded-full" />
+              <div className="w-6 h-0.5 bg-orange-500 rounded-full" />
+              <div className="w-4 h-0.5 bg-white rounded-full self-end mr-4" />
+            </>
           )}
         </button>
 
