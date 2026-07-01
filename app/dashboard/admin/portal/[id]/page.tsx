@@ -130,7 +130,7 @@ export default function ProjectReportPage() {
           {/* Identificação da Obra (Títulos Preservados) */}
           <div className="flex items-start justify-between mb-8 text-left">
             <div className="text-left">
-              <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Relatório de Campo</p>
+              <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Relatório de Check-In</p>
               <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none text-white">
                 {project?.name || 'Obra'}
               </h1>

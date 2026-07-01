@@ -167,8 +167,20 @@ export default function PublicCheckInPage() {
   return (
     <main className="min-h-screen w-full bg-[#020617] text-white px-6 flex flex-col items-center justify-start overflow-y-auto">
       
-      {/* Bloco invisível que ocupa o espaço exato do menu fixo */}
-      <div className="h-24 w-full shrink-0" />
+      {/* Faixa Superior (Branding Sem Botão de Menu para Acesso Público) */}
+      <div className="w-full max-w-md mb-4 flex items-center justify-between border-b border-white/5 pb-6 pt-6 md:pt-10">
+        <div className="flex items-center gap-4">
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            className="w-20 h-20 md:w-24 md:h-24 object-contain shrink-0" 
+          />
+          <span className="text-2xl font-black italic tracking-tighter uppercase text-white">
+            TRUCK<span className="text-orange-500">FLOW</span>
+            <span className="text-orange-500 font-extrabold">.</span>
+          </span>
+        </div>
+      </div>
 
       {/* Cartão do Formulário (Sempre começa abaixo do bloco acima) */}
       <div className="w-full max-w-md glass p-6 md:p-8 rounded-[40px] border border-white/10 shadow-2xl relative text-left mb-12 animate-in fade-in zoom-in-95 duration-300">
