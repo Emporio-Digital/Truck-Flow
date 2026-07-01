@@ -165,7 +165,7 @@ export default function PublicCheckInPage() {
 
   // FORMULÁRIO DE PREENCHIMENTO PÚBLICO COM ESPAÇADOR FÍSICO CONTRA SOBREPOSIÇÃO
   return (
-    <main className="min-h-screen w-full bg-[#020617] text-white px-6 flex flex-col items-center justify-start overflow-y-auto">
+    <main className="min-h-screen w-full bg-[#020617] text-white px-6 flex flex-col items-center justify-start overflow-y-auto pt-36 md:pt-44">
       
       
 

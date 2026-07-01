@@ -89,9 +89,9 @@ export default function Navbar() {
           onClick={() => setIsOpen(false)} 
         />
         
-        {/* Painel que desliza da direita */}
+        {/* Painel que desliza da direita com fundo 100% sólido */}
         <div 
-          className={`relative w-[85%] max-w-sm bg-[#020617] h-full border-l border-white/10 p-8 shadow-2xl transition-transform duration-500 ease-out ${
+          className={`relative w-[85%] max-w-sm bg-slate-950 h-full border-l border-white/10 p-8 shadow-2xl transition-transform duration-500 ease-out z-[210] ${
             isOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
