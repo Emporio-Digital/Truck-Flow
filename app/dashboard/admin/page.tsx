@@ -108,7 +108,7 @@ export default function AdminDashboard() {
             <img 
               src="/logo.png" 
               alt="Logo" 
-              className="w-16 h-16 md:w-20 md:h-20 object-contain shrink-0" 
+              className="w-20 h-20 md:w-24 md:h-24 object-contain shrink-0" 
             />
             <span className="text-2xl font-black italic tracking-tighter uppercase text-white">
               TRUCK<span className="text-orange-500">FLOW</span>
