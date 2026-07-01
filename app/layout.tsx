@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 export const metadata = {
-  title: "TruckFlow | Gold Edition",
+  title: "TruckFlow | Gestão de Frotas",
   description: "A revolução na gestão de frotas",
   manifest: "/manifest.json",
   icons: {
