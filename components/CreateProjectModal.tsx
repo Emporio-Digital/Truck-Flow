@@ -7,10 +7,12 @@ export default function CreateProjectModal({ companyId, onClose, onSuccess }: an
   const [address, setAddress] = useState("")
   const [paymentModel, setPaymentModel] = useState("viagem")
   const [loading, setLoading] = useState(false)
+  // Estado para substituir alertas padrão por alerta premium
+  const [alertMessage, setAlertMessage] = useState<string | null>(null)
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name) return alert("O nome da obra é obrigatório")
+    if (!name) return setAlertMessage("O nome da obra é obrigatório")
     
     setLoading(true)
     const { error } = await supabase.from('projects').insert([
@@ -24,7 +26,7 @@ export default function CreateProjectModal({ companyId, onClose, onSuccess }: an
     ])
 
     if (error) {
-      alert("Erro ao salvar!")
+      setAlertMessage("Erro ao salvar o cadastro da obra!")
     } else {
       onSuccess()
       onClose()
@@ -109,6 +111,30 @@ export default function CreateProjectModal({ companyId, onClose, onSuccess }: an
           </button>
         </form>
       </div>
+
+      {/* MODAL DE ALERTA PREMIUM CUSTOMIZADO (SUBSTITUTO DO ALERT NATIVO) */}
+      {alertMessage && (
+        <div className="fixed inset-0 z-[400] flex items-center justify-center p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="glass w-full max-w-sm p-6 rounded-[32px] border border-white/10 shadow-2xl relative text-center text-white animate-in zoom-in-95 duration-200">
+            {/* Ícone Alerta Animado */}
+            <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-bounce">
+              ⚠️
+            </div>
+            
+            <h3 className="text-lg font-black italic uppercase tracking-tighter text-white mb-2">Atenção</h3>
+            <p className="text-white/70 text-xs font-medium leading-relaxed mb-6 italic">{alertMessage}</p>
+            
+            {/* Botão de Fechar */}
+            <button 
+              type="button"
+              onClick={() => setAlertMessage(null)}
+              className="w-full bg-[#F97316] hover:bg-orange-600 text-black font-black uppercase tracking-[2px] py-4 rounded-2xl text-xs transition-all active:scale-95 shadow-[0_10px_30px_rgba(249,115,22,0.3)]"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

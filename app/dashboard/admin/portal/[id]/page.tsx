@@ -137,26 +137,37 @@ export default function ProjectReportPage() {
             </div>
           </div>
 
-          {/* BARRA DE FILTRO NATIVA */}
-          <div className="bg-white/5 p-4 rounded-[24px] border border-white/5 flex flex-col md:flex-row items-center gap-4">
-            <div className="flex-1 w-full relative">
-              <p className="text-[8px] font-black uppercase text-orange-500 tracking-[2px] mb-2 ml-2 italic">Buscar por Data (Até 6 meses)</p>
-              <input 
-                type="date" 
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white font-black uppercase text-xs focus:border-orange-500 outline-none appearance-none"
-                style={{ colorScheme: 'dark' }} // Força o calendário nativo a ficar dark
-              />
+          {/* BARRA DE FILTRO NATIVA + CARD QUADRADO DO TOTAL */}
+          <div className="flex items-start gap-3 md:gap-4 w-full">
+            {/* Campo de Filtro */}
+            <div className="flex-1 bg-white/5 p-4 rounded-[24px] border border-white/5 flex flex-col md:flex-row items-center gap-4">
+              <div className="flex-1 w-full relative">
+                <p className="text-[8px] font-black uppercase text-orange-500 tracking-[2px] mb-2 ml-2 italic">Buscar por Data (Até 6 meses)</p>
+                <input 
+                  type="date" 
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white font-black uppercase text-xs focus:border-orange-500 outline-none appearance-none"
+                  style={{ colorScheme: 'dark' }}
+                />
+              </div>
+              {filterDate && (
+                <button 
+                  onClick={() => setFilterDate("")}
+                  className="w-full md:w-auto bg-white text-black font-black uppercase text-[9px] tracking-widest px-6 h-14 rounded-xl active:scale-95 transition-all animate-in fade-in duration-200"
+                >
+                  Limpar
+                </button>
+              )}
             </div>
-            {filterDate && (
-              <button 
-                onClick={() => setFilterDate("")}
-                className="w-full md:w-auto bg-white text-black font-black uppercase text-[9px] tracking-widest px-6 h-14 rounded-xl active:scale-95 transition-all"
-              >
-                Limpar Filtro
-              </button>
-            )}
+
+            {/* Card Quadrado Perfeito (1x1) Fixo no Topo */}
+            <div className="w-28 h-28 md:w-32 md:h-32 bg-white/5 border border-white/5 rounded-[24px] flex flex-col items-center justify-center shrink-0 text-center select-none">
+              <p className="text-[8px] font-black uppercase text-orange-500 tracking-[1px] mb-1 italic">Total</p>
+              <span className="text-3xl md:text-4xl font-black italic tracking-tighter leading-none text-white">
+                {entries.length}
+              </span>
+            </div>
           </div>
         </div>
 

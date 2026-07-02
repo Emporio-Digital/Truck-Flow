@@ -174,7 +174,7 @@ export default function PublicCheckInPage() {
         
         {/* Cabeçalho do Portal */}
         <div className="mb-8">
-          <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Portal de Terceiros</p>
+          <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Portal do Prestador</p>
           <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-none">{project.name}</h2>
           <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest mt-1 italic">{project.companies?.name || 'EG TruckFlow'}</p>
         </div>

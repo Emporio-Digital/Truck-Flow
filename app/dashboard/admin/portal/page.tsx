@@ -10,6 +10,8 @@ export default function JobSitesPage() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  // Estado para substituir alertas padrão por alerta premium
+  const [alertMessage, setAlertMessage] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -100,7 +102,7 @@ export default function JobSitesPage() {
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText(`https://egtruckflow.com.br/check-in/${project.id}`)
-                        alert("Copiado!")
+                        setAlertMessage("Link de check-in copiado com sucesso!")
                       }}
                       className="flex-[2] bg-white text-black font-black uppercase text-[9px] tracking-widest h-12 rounded-xl hover:bg-orange-500 transition-all active:scale-95 italic"
                     >
@@ -144,7 +146,15 @@ export default function JobSitesPage() {
               <p className="text-[8px] font-black uppercase text-orange-500 tracking-[2px] mb-3 italic text-center text-left">Código de Acesso</p>
               <div className="flex items-center justify-between gap-2 bg-black/40 p-3 rounded-xl border border-white/5">
                 <code className="text-white font-black tracking-widest text-xs uppercase">{profile?.companies?.company_token}</code>
-                <button onClick={() => { navigator.clipboard.writeText(profile?.companies?.company_token); alert("Token copiado!"); }} className="bg-orange-500 text-black text-[8px] font-black px-3 py-1.5 rounded-lg uppercase transition-all">Copiar</button>
+                <button 
+                  onClick={() => { 
+                    navigator.clipboard.writeText(profile?.companies?.company_token || ""); 
+                    setAlertMessage("Código de acesso copiado com sucesso!"); 
+                  }} 
+                  className="bg-orange-500 text-black text-[8px] font-black px-3 py-1.5 rounded-lg uppercase transition-all active:scale-95"
+                >
+                  Copiar
+                </button>
               </div>
             </div>
 
@@ -177,6 +187,29 @@ export default function JobSitesPage() {
           onClose={() => setIsModalOpen(false)}
           onSuccess={() => window.location.reload()}
         />
+      )}
+
+      {/* MODAL DE ALERTA PREMIUM CUSTOMIZADO (SUBSTITUTO DO ALERT NATIVO) */}
+      {alertMessage && (
+        <div className="fixed inset-0 z-[700] flex items-center justify-center p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="glass w-full max-w-sm p-6 rounded-[32px] border border-white/10 shadow-2xl relative text-center text-white animate-in zoom-in-95 duration-200">
+            {/* Ícone Alerta Animado */}
+            <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-bounce">
+              ⚠️
+            </div>
+            
+            <h3 className="text-lg font-black italic uppercase tracking-tighter text-white mb-2">Atenção</h3>
+            <p className="text-white/70 text-xs font-medium leading-relaxed mb-6 italic">{alertMessage}</p>
+            
+            {/* Botão de Fechar */}
+            <button 
+              onClick={() => setAlertMessage(null)}
+              className="w-full bg-[#F97316] hover:bg-orange-600 text-black font-black uppercase tracking-[2px] py-4 rounded-2xl text-xs transition-all active:scale-95 shadow-[0_10px_30px_rgba(249,115,22,0.3)]"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
       )}
     </main>
   )
