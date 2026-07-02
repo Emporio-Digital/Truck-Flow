@@ -93,7 +93,7 @@ export default function CreateCompanyModal({ userId, onSuccess }: Props) {
                 🛣️ Viagem
               </button>
             </div>
-            <p className="text-[9px] text-white/20 mt-3 ml-2 italic">* Você poderá alterar isso individualmente por motorista depois.</p>
+            <p className="text-[9px] text-white/50 mt-3 ml-2 italic">* Você poderá alterar isso depois.</p>
           </div>
 
           <button 
