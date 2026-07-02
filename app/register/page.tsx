@@ -29,18 +29,18 @@ export default function Register() {
       return
     }
 
-    // Realiza o cadastro enviando 'admin' ou 'driver' no metadata de acordo com a tabela profiles do dossiê
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          whatsapp: whatsapp,
-          role: role === 'owner' ? 'admin' : 'driver',
-        },
-      },
-    })
+    // Cadastra o usuário no Auth (Mantém 'owner' e 'driver' para bater com as constraints do seu banco de dados)
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              whatsapp: whatsapp,
+              role: role,
+            },
+          },
+        })
 
     if (error) {
       setMessage("❌ " + error.message)
