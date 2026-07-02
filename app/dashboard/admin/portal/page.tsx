@@ -12,6 +12,10 @@ export default function JobSitesPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   // Estado para substituir alertas padrão por alerta premium
   const [alertMessage, setAlertMessage] = useState<string | null>(null)
+  // Estados para controle de exclusão segura de obras
+  const [projectToDelete, setProjectToDelete] = useState<any>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -34,6 +38,29 @@ export default function JobSitesPage() {
     }
     fetchData()
   }, [router])
+
+  // Executa a exclusão definitiva da frente de obra no Supabase
+  const executeDelete = async () => {
+    if (!projectToDelete) return
+    setDeleting(true)
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectToDelete.id)
+
+      if (error) throw error
+
+      setShowDeleteConfirm(false)
+      setProjectToDelete(null)
+      // Atualiza a lista local instantaneamente sem precisar recarregar a tela inteira
+      setProjects(projects.filter(p => p.id !== projectToDelete.id))
+    } catch (err: any) {
+      setAlertMessage(`Erro ao excluir obra: ${err.message}`)
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   if (loading) return <div className="min-h-screen bg-[#020617] flex items-center justify-center text-white font-black italic tracking-widest text-2xl uppercase">Carregando...</div>
 
@@ -82,19 +109,36 @@ export default function JobSitesPage() {
                 className="bg-[#0f172a]/60 backdrop-blur-xl p-8 rounded-[40px] border border-white/10 group hover:border-orange-500/40 transition-all relative overflow-hidden shadow-2xl text-left"
               >
                 <div className="flex flex-col gap-4 text-left">
-                  {/* Linha Topo: Nome e Status (Mais baixo) */}
+                  {/* Linha Topo: Nome, Status e Lixeira (Com pr-2 para não cortar fontes em itálico) */}
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white leading-none mb-1 uppercase">
+                      <h3 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-white leading-none mb-1.5 uppercase truncate pr-2 max-w-[190px] md:max-w-[290px]">
                         {project.name}
                       </h3>
                       <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest italic leading-none">
                         {project.address || 'Sem Endereço'}
                       </p>
                     </div>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 px-2 py-1 rounded-md border border-orange-500/20 italic">
-                      {project.payment_model}
-                    </span>
+                    
+                    {/* Bloco de Ações Verticais Direitas */}
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      {/* Botão Lixeira de Exclusão da Obra */}
+                      <button 
+                        onClick={() => {
+                          setProjectToDelete(project)
+                          setShowDeleteConfirm(true)
+                        }}
+                        className="w-8 h-8 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-90"
+                        title="Excluir Obra"
+                      >
+                        🗑️
+                      </button>
+                      
+                      {/* Badge do Modelo de Acerto */}
+                      <span className="text-[8px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 px-2 py-1 rounded-md border border-orange-500/20 italic block leading-none">
+                        {project.payment_model}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Linha de Botões: Menores e Lado a Lado */}
@@ -208,6 +252,39 @@ export default function JobSitesPage() {
             >
               Entendido
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO PREMIUM (SEM POPUPS DO NAVEGADOR) */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[750] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="glass w-full max-w-sm p-6 rounded-[32px] border border-white/10 shadow-2xl relative text-center text-white animate-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+              🗑️
+            </div>
+            
+            <h3 className="text-lg font-black italic uppercase tracking-tighter text-white mb-2">Excluir Frente?</h3>
+            <p className="text-white/70 text-xs font-medium leading-relaxed mb-6 italic">
+              Esta ação é permanente e removerá a frente "{projectToDelete?.name}" de forma definitiva. Todos os links e QR Codes públicos associados a esta obra deixarão de funcionar imediatamente.
+            </p>
+            
+            <div className="flex gap-3">
+              <button 
+                disabled={deleting}
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-[1px] py-4 rounded-2xl text-[10px] transition-all border border-white/10 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button 
+                disabled={deleting}
+                onClick={executeDelete}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[1px] py-4 rounded-2xl text-[10px] transition-all shadow-[0_5px_20px_rgba(239,68,68,0.3)] disabled:opacity-50"
+              >
+                {deleting ? "EXCLUINDO..." : "EXCLUIR"}
+              </button>
+            </div>
           </div>
         </div>
       )}

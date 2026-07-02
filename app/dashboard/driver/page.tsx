@@ -17,6 +17,11 @@ export default function DriverDashboard() {
   const [isLinking, setIsLinking] = useState(false)
   // Estado para a foto em tela cheia (Lightbox)
   const [activeLightboxUrl, setActiveLightboxUrl] = useState<string | null>(null)
+  // Estado para substituir alertas padrão por alerta premium
+  const [alertMessage, setAlertMessage] = useState<string | null>(null)
+  // Estados para controle de exclusão segura
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // Função para forçar o download direto de imagens externas (Supabase Storage)
   const handleDownloadFile = async (imageUrl: string, filename: string) => {
@@ -59,15 +64,22 @@ export default function DriverDashboard() {
       setProfile(prof)
       
       if (prof?.company_id) {
-        // Busca todas as viagens do próprio motorista
+        // Define limite de segurança retroativo de 6 meses (Máxima performance no 4G)
+        const sixMonthsAgo = new Date()
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+        const limitDate = sixMonthsAgo.toISOString()
+
+        // Busca todas as viagens do próprio motorista nos últimos 6 meses
         const { data: t } = await supabase.from('trips')
           .select('*')
           .eq('driver_id', user.id)
+          .gte('created_at', limitDate)
 
-        // Busca todas as despesas do próprio motorista
+        // Busca todas as despesas do próprio motorista nos últimos 6 meses
         const { data: e } = await supabase.from('expenses')
           .select('*')
           .eq('driver_id', user.id)
+          .gte('created_at', limitDate)
 
         // Combina as informações ordenando por data decrescente
         const combined = [
@@ -92,12 +104,18 @@ export default function DriverDashboard() {
     return matchesDate && matchesType;
   })
 
-  // Estatísticas Dinâmicas Baseadas na Data Selecionada
-  const stats = filteredItems.reduce((acc, curr) => {
-    if (curr.kind === 'viagem') acc.trips += 1;
-    if (curr.kind === 'gasto') acc.expenses += Number(curr.value);
-    return acc;
-  }, { trips: 0, expenses: 0 })
+  // Estatísticas Dinâmicas Baseadas na Data Selecionada (Independente do tipo de filtro selecionado abaixo)
+  const dayTripsCount = timelineItems.filter(item => {
+    const itemDate = new Date(item.created_at);
+    const itemDateString = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}-${String(itemDate.getDate()).padStart(2, '0')}`;
+    return itemDateString === selectedDate && item.kind === 'viagem';
+  }).length;
+
+  const dayExpensesSum = timelineItems.filter(item => {
+    const itemDate = new Date(item.created_at);
+    const itemDateString = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}-${String(itemDate.getDate()).padStart(2, '0')}`;
+    return itemDateString === selectedDate && item.kind === 'gasto';
+  }).reduce((acc, curr) => acc + Number(curr.value), 0);
 
   const handleJoinCompany = async () => {
     if (!tokenInput) return
@@ -107,9 +125,32 @@ export default function DriverDashboard() {
       await supabase.from('profiles').update({ company_id: company.id }).eq('id', profile.id)
       window.location.reload()
     } else {
-      alert("Token Inválido")
+      setAlertMessage("O código de acesso fornecido é inválido. Verifique com seu patrão.")
     }
     setIsLinking(false)
+  }
+
+  // Executa a remoção direta no Supabase e atualiza o painel
+  const executeDelete = async () => {
+    if (!selectedTrip) return
+    setDeleting(true)
+    try {
+      const table = selectedTrip.kind === 'viagem' ? 'trips' : 'expenses'
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq('id', selectedTrip.id)
+
+      if (error) throw error
+      
+      setShowDeleteConfirm(false)
+      setSelectedTrip(null)
+      window.location.reload()
+    } catch (err: any) {
+      setAlertMessage(`Erro ao excluir o registro: ${err.message}`)
+    } finally {
+      setDeleting(false)
+    }
   }
 
   if (!profile) return <div className="min-h-screen bg-[#020617] flex items-center justify-center text-white font-black italic tracking-widest">CARREGANDO...</div>
@@ -173,10 +214,10 @@ export default function DriverDashboard() {
 
         {profile.company_id ? (
           <>
-            {/* Stats Identicos */}
+            {/* Stats Dinâmicos do Dia Selecionado */}
             <div className="grid grid-cols-2 gap-3 mb-8">
-              <StatCard title="Viagens" value={stats.trips} unit="total" />
-              <StatCard title="Gastos" value={`R$${stats.expenses}`} color="text-orange-500" />
+              <StatCard title="Viagens" value={dayTripsCount} unit="total" />
+              <StatCard title="Gastos" value={`R$${dayExpensesSum}`} color="text-orange-500" />
             </div>
 
             {/* BARRA DE FILTROS DUPLA PREMIUM (Lado a Lado) */}
@@ -251,7 +292,7 @@ export default function DriverDashboard() {
             <div className="mt-10 mb-20">
               <div className="mb-6 px-1 text-left">
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Minha Atividade</h2>
-                <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-1">Registros Filtrados</p>
+                <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-1">Registros</p>
               </div>
 
               <div className="space-y-4">
@@ -369,9 +410,18 @@ export default function DriverDashboard() {
             {selectedTrip.kind === 'viagem' ? (
               /* LAYOUT DE RESUMO DE VIAGEM */
               <>
-                <div className="mb-8 text-left">
-                  <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Viagem</h2>
-                  <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Digital</p>
+                <div className="flex justify-between items-start mb-8 text-left">
+                  <div>
+                    <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Viagem</h2>
+                    <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Digital</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-90 shrink-0"
+                    title="Excluir Registro"
+                  >
+                    🗑️
+                  </button>
                 </div>
 
                 <div className="space-y-6">
@@ -431,9 +481,18 @@ export default function DriverDashboard() {
             ) : (
               /* LAYOUT DE RESUMO DE DESPESA (NOVO GASTO) */
               <>
-                <div className="mb-8 text-left">
-                  <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Despesa</h2>
-                  <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Financeiro</p>
+                <div className="flex justify-between items-start mb-8 text-left">
+                  <div>
+                    <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Despesa</h2>
+                    <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Financeiro</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-90 shrink-0"
+                    title="Excluir Registro"
+                  >
+                    🗑️
+                  </button>
                 </div>
 
                 <div className="space-y-6">
@@ -549,9 +608,65 @@ export default function DriverDashboard() {
         </div>
 
       </div>
-    </main>
-  )
-}
+
+      {/* MODAL DE ALERTA PREMIUM CUSTOMIZADO (SUBSTITUTO DO ALERT NATIVO) */}
+          {alertMessage && (
+            <div className="fixed inset-0 z-[700] flex items-center justify-center p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+              <div className="glass w-full max-w-sm p-6 rounded-[32px] border border-white/10 shadow-2xl relative text-center text-white animate-in zoom-in-95 duration-200">
+                {/* Ícone Alerta Animado */}
+                <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-bounce">
+                  ⚠️
+                </div>
+                
+                <h3 className="text-lg font-black italic uppercase tracking-tighter text-white mb-2">Atenção</h3>
+                <p className="text-white/70 text-xs font-medium leading-relaxed mb-6 italic">{alertMessage}</p>
+                
+                {/* Botão de Fechar */}
+                <button 
+                  onClick={() => setAlertMessage(null)}
+                  className="w-full bg-[#F97316] hover:bg-orange-600 text-black font-black uppercase tracking-[2px] py-4 rounded-2xl text-xs transition-all active:scale-95 shadow-[0_10px_30px_rgba(249,115,22,0.3)]"
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO PREMIUM (SEM POPUPS DO NAVEGADOR) */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 z-[750] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+              <div className="glass w-full max-w-sm p-6 rounded-[32px] border border-white/10 shadow-2xl relative text-center text-white animate-in zoom-in-95 duration-200">
+                <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-pulse">
+                  🗑️
+                </div>
+                
+                <h3 className="text-lg font-black italic uppercase tracking-tighter text-white mb-2">Excluir Registro?</h3>
+                <p className="text-white/70 text-xs font-medium leading-relaxed mb-6 italic">
+                  Esta ação é permanente e removerá este comprovante de {selectedTrip?.kind === 'viagem' ? 'viagem' : 'despesa'} definitivamente da sua timeline.
+                </p>
+                
+                <div className="flex gap-3">
+                  <button 
+                    disabled={deleting}
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-[1px] py-4 rounded-2xl text-[10px] transition-all border border-white/10 disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    disabled={deleting}
+                    onClick={executeDelete}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[1px] py-4 rounded-2xl text-[10px] transition-all shadow-[0_5px_20px_rgba(239,68,68,0.3)] disabled:opacity-50"
+                  >
+                    {deleting ? "EXCLUINDO..." : "EXCLUIR"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      )
+    }
 // COMPONENTE AUXILIAR STATCARD ÚNICO E ALINHADO
 function StatCard({ title, value, unit, color }: any) {
   return (

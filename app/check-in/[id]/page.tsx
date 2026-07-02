@@ -141,23 +141,102 @@ export default function PublicCheckInPage() {
     )
   }
 
-  // TELA DE SUCESSO DO MOTORISTA (BORDAS E ESCAPE CORRIGIDOS)
+  // TELA DE SUCESSO DO MOTORISTA (EXTRATO PREMIUM + CONVITE MARKETING VIRAL)
   if (success) {
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 text-white text-center">
-        <div className="glass max-w-md w-full p-8 pb-10 rounded-[40px] border border-white/10 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-500">
-          <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center text-4xl mx-auto mb-8 animate-bounce">
-            👍
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 md:p-10 text-white text-center pt-24 pb-12 overflow-y-auto">
+        <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500 space-y-6">
+          
+          {/* COMPROVANTE DIGITAL (TICKET PRETO PREMIUM) */}
+          <div className="bg-[#030712] w-full p-6 md:p-8 rounded-[36px] border border-white/10 shadow-2xl relative text-left overflow-hidden">
+            
+            {/* Linha técnica de luz no topo */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-orange-500 shadow-[0_0_15px_#f97316]" />
+
+            {/* Cabeçalho do Ticket */}
+            <div className="text-center pb-6 border-b border-white/5">
+              <span className="text-orange-500 text-[9px] font-black uppercase tracking-[4px] italic block mb-1">
+                Comprovante de Check-in
+              </span>
+              <h3 className="text-xl font-black italic uppercase tracking-tighter text-white">
+                Registro Concluído
+              </h3>
+            </div>
+
+            {/* Lista Técnica de Informações */}
+            <div className="py-6 space-y-4">
+              
+              {/* Linha 1: Motorista */}
+              <div className="flex justify-between items-center border-b border-white/[0.03] pb-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Prestador:</span>
+                <span className="font-black text-sm uppercase text-white truncate max-w-[200px]">{driverName}</span>
+              </div>
+
+              {/* Linha 2: Placa */}
+              <div className="flex justify-between items-center border-b border-white/[0.03] pb-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Placa do Veículo:</span>
+                <span className="font-mono font-black text-sm uppercase italic text-orange-500 tracking-widest">{vehiclePlate.toUpperCase()}</span>
+              </div>
+
+              {/* Linha 3: Obra */}
+              <div className="flex justify-between items-center border-b border-white/[0.03] pb-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Frente de Obra:</span>
+                <span className="font-black text-sm uppercase text-white truncate max-w-[200px]">{project.name}</span>
+              </div>
+
+              {/* Linha 4: Tipo */}
+              <div className="flex justify-between items-center border-b border-white/[0.03] pb-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Modelo:</span>
+                <span className="font-black text-sm uppercase text-white/80 italic">{project.payment_model}</span>
+              </div>
+
+              {/* Linha 5: Horário */}
+              <div className="flex justify-between items-center pb-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Hora e Data:</span>
+                <span className="font-bold text-xs text-white/80">
+                  {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - {new Date().toLocaleDateString('pt-BR')}
+                </span>
+              </div>
+
+            </div>
+
+            {/* Divisor Serrilhado Digital */}
+            <div className="h-[1px] w-full bg-white/5 my-2 border-t border-dashed border-white/10" />
+
+            <div className="text-center pt-4">
+              <p className="text-[9px] text-white/80 font-black uppercase tracking-[2px] italic">
+                REALIZADO COM SUCESSO
+              </p>
+            </div>
+
           </div>
-          <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-4 text-white">Check-in Realizado!</h2>
-          <p className="text-orange-500 text-[10px] font-black uppercase tracking-[3px] italic mb-6">Enviado</p>
-          <div className="bg-black/40 border border-white/5 p-4 rounded-2xl mb-8 text-left space-y-2">
-            <p className="text-[10px] text-white/60 uppercase font-bold">Resumo do Envio:</p>
-            <p className="text-sm font-black text-white uppercase"><span className="text-white/60 font-medium text-xs">Motorista:</span> {driverName}</p>
-            <p className="text-sm font-black text-orange-500 uppercase italic"><span className="text-white/60 font-medium text-xs not-italic">Placa:</span> {vehiclePlate.toUpperCase()}</p>
-            <p className="text-xs font-black text-white/80 uppercase"><span className="text-white/60 font-medium text-xs">Frente:</span> {project.name}</p>
+
+          {/* CARD DE CONVITE B2B (FUNDO NITRO ESCURO COM BORDA DE DESTAQUE ORANGE) */}
+          <div className="bg-[#070a13] p-6 rounded-[36px] border border-orange-500/30 shadow-2xl text-left space-y-4 relative overflow-hidden">
+            <div className="absolute -right-8 -bottom-8 text-7xl opacity-5 select-none">
+              🚛
+            </div>
+            
+            <div>
+              <span className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] italic block mb-1">
+                Controle e Praticidade
+              </span>
+              <h4 className="text-lg font-black italic uppercase tracking-tighter text-white font-black">
+                Gostou da Praticidade?
+              </h4>
+              <p className="text-white/70 text-xs leading-relaxed font-semibold mt-2">
+                Elimine o controle manual de frotas. Monitore seus motoristas agregados, viagens e custos direto pelo celular com o <span className="text-orange-500 font-black">TruckFlow</span>.
+              </p>
+            </div>
+
+            <button 
+              onClick={() => window.open("https://egtruckflow.com.br", "_blank")}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-black font-black uppercase text-xs tracking-[2px] py-4 rounded-2xl transition-all active:scale-95 shadow-[0_8px_25px_rgba(249,115,22,0.4)] text-center block"
+            >
+              Conhecer o TruckFlow
+            </button>
           </div>
-          <p className="text-white/80 text-[11px] font-bold italic">Obrigado! Seu registro já está disponível na central do contratante.</p>
+
         </div>
       </div>
     )

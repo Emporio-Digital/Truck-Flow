@@ -53,12 +53,9 @@ export default function NewTripModal({ userId, companyId, onClose, onSuccess }: 
             ctx.fillStyle = 'rgba(2, 6, 23, 0.85)'; // Fundo escuro profundo
             ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
             
-            // Injeta o Carimbo Digital Incontestável da Rota
-            ctx.fillStyle = '#FFFFFF'; // Texto principal em branco
-            const routeText = `${origin.trim().toUpperCase()} ➔ ${destination.trim().toUpperCase()}`;
-            
+            // Injeta o Carimbo Digital Incontestável (Apenas Data e Hora para manter o padrão)
             ctx.fillStyle = '#F97316'; // Timestamp em Highway Orange
-            ctx.fillText(`REGISTRO AUDITADO: ${timestamp}`, canvas.width * 0.04, canvas.height - (barHeight * 0.22));
+            ctx.fillText(`REGISTRO VERIFICADO: ${timestamp}`, canvas.width * 0.04, canvas.height - (barHeight * 0.38));
           }
           
           // Converte para JPEG com compressão de 80% para economizar internet móvel

@@ -57,7 +57,7 @@ export default function Login() {
       <div className="relative z-10 w-full max-w-[450px]">
         <div className="text-center mb-8 text-white">
           <h2 className="text-6xl font-black italic tracking-tighter mb-2 uppercase italic leading-none">LOGIN</h2>
-          <p className="text-blue-500 font-bold tracking-[3px] text-[10px] uppercase italic">Acesso TruckFlow Gold Edition</p>
+          <p className="text-blue-500 font-bold tracking-[3px] text-[10px] uppercase italic">Acesso TruckFlow</p>
         </div>
 
         <form onSubmit={handleLogin} className="glass rounded-[32px] p-8 space-y-6 shadow-2xl">

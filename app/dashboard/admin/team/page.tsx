@@ -14,6 +14,9 @@ export default function MyTeamPage() {
   const [activeLightboxUrl, setActiveLightboxUrl] = useState<string | null>(null)
   // Estado para substituir alertas padrão por alerta premium
   const [alertMessage, setAlertMessage] = useState<string | null>(null)
+  // Estados para controle de exclusão segura
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // Função para forçar o download direto de imagens do Supabase Storage
   const handleDownloadFile = async (imageUrl: string, filename: string) => {
@@ -108,6 +111,29 @@ export default function MyTeamPage() {
     }
     fetchTeamData()
   }, [router])
+
+  // Executa a remoção direta de registros da equipe no Supabase (Sobrescrita do Administrador)
+  const executeDelete = async () => {
+    if (!selectedTrip) return
+    setDeleting(true)
+    try {
+      const table = selectedTrip.kind === 'viagem' ? 'trips' : 'expenses'
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq('id', selectedTrip.id)
+
+      if (error) throw error
+      
+      setShowDeleteConfirm(false)
+      setSelectedTrip(null)
+      window.location.reload()
+    } catch (err: any) {
+      setAlertMessage(`Erro ao excluir o registro: ${err.message}`)
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   // Lógica de Filtros no Client (Data + Tipo + Funcionário)
   const filteredItems = timelineItems.filter(item => {
@@ -396,15 +422,24 @@ export default function MyTeamPage() {
 
       {/* MINI-EXTRATO (Com animação e correção de Build) */}
       <div className={`fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-10 bg-black/95 backdrop-blur-xl transition-all duration-500 ${selectedTrip ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-        <div className={`glass w-full max-w-lg p-8 rounded-[40px] border border-white/10 shadow-2xl relative text-white transition-all duration-500 ease-out ${selectedTrip ? 'scale-100 translate-y-0 opacity-100' : 'scale-90 translate-y-10 opacity-0'}`}>
+        <div className={`glass w-full max-w-lg p-6 md:p-8 rounded-[40px] border border-white/10 shadow-2xl relative text-white max-h-[90vh] overflow-y-auto transition-all duration-500 ease-out ${selectedTrip ? 'scale-100 translate-y-0 opacity-100' : 'scale-90 translate-y-10 opacity-0'}`}>
           {selectedTrip && (
             <>
               {selectedTrip.kind === 'viagem' ? (
                 /* LAYOUT DE RESUMO DE VIAGEM */
                 <>
-                  <div className="mb-8 text-left">
-                    <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Viagem</h2>
-                    <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Digital</p>
+                  <div className="flex justify-between items-start mb-8 text-left">
+                    <div>
+                      <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Viagem</h2>
+                      <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Digital</p>
+                    </div>
+                    <button 
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-90 shrink-0"
+                      title="Excluir Registro"
+                    >
+                      🗑️
+                    </button>
                   </div>
 
                   <div className="space-y-6">
@@ -464,9 +499,18 @@ export default function MyTeamPage() {
               ) : (
                 /* LAYOUT DE RESUMO DE DESPESA (NOVO GASTO) */
                 <>
-                  <div className="mb-8 text-left">
-                    <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Despesa</h2>
-                    <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Financeiro</p>
+                  <div className="flex justify-between items-start mb-8 text-left">
+                    <div>
+                      <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Despesa</h2>
+                      <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Financeiro</p>
+                    </div>
+                    <button 
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-90 shrink-0"
+                      title="Excluir Registro"
+                    >
+                      🗑️
+                    </button>
                   </div>
 
                   <div className="space-y-6">
@@ -599,6 +643,39 @@ export default function MyTeamPage() {
             >
               Entendido
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO PREMIUM (SEM POPUPS DO NAVEGADOR) */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[750] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="glass w-full max-w-sm p-6 rounded-[32px] border border-white/10 shadow-2xl relative text-center text-white animate-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+              🗑️
+            </div>
+            
+            <h3 className="text-lg font-black italic uppercase tracking-tighter text-white mb-2">Excluir Registro?</h3>
+            <p className="text-white/70 text-xs font-medium leading-relaxed mb-6 italic">
+              Esta ação é permanente e removerá este comprovante de {selectedTrip?.kind === 'viagem' ? 'viagem' : 'despesa'} definitivamente do histórico do colaborador.
+            </p>
+            
+            <div className="flex gap-3">
+              <button 
+                disabled={deleting}
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-[1px] py-4 rounded-2xl text-[10px] transition-all border border-white/10 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button 
+                disabled={deleting}
+                onClick={executeDelete}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-[1px] py-4 rounded-2xl text-[10px] transition-all shadow-[0_5px_20px_rgba(239,68,68,0.3)] disabled:opacity-50"
+              >
+                {deleting ? "EXCLUINDO..." : "EXCLUIR"}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -33,18 +33,33 @@ export default function NewExpenseModal({ userId, companyId, onClose, onSuccess 
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
+          
+          // Mantém a proporção e resolução real da foto capturada
           canvas.width = img.width;
           canvas.height = img.height;
+          
           if (ctx) {
+            // Desenha a imagem original no canvas
             ctx.drawImage(img, 0, 0);
+            
+            // Formatação oficial de data e hora de Brasília
             const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-            const fontSize = canvas.width * 0.04;
+            
+            // Tamanho da fonte proporcional à largura da imagem (2.5% da largura)
+            const fontSize = Math.max(20, canvas.width * 0.025);
             ctx.font = `bold ${fontSize}px Inter, sans-serif`;
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            ctx.fillRect(0, canvas.height - (fontSize * 2.5), canvas.width, fontSize * 2.5);
-            ctx.fillStyle = '#F97316';
-            ctx.fillText(`GASTO COMPROVADO: ${timestamp}`, canvas.width * 0.05, canvas.height - fontSize);
+            
+            // Desenha a barra escura de fundo na base da foto para contraste absoluto (Mesmo padrão slate-950)
+            const barHeight = fontSize * 3;
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.85)'; // Fundo escuro profundo
+            ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
+            
+            // Injeta o Carimbo Digital Incontestável (Apenas Data e Hora para manter o padrão)
+            ctx.fillStyle = '#F97316'; // Timestamp em Highway Orange
+            ctx.fillText(`REGISTRO VERIFICADO: ${timestamp}`, canvas.width * 0.04, canvas.height - (barHeight * 0.38));
           }
+          
+          // Converte para JPEG com compressão de 80% para economizar internet móvel
           canvas.toBlob((blob) => resolve(blob as Blob), 'image/jpeg', 0.8);
         };
       };

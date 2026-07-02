@@ -3,8 +3,10 @@
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function Register() {
+  const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -13,6 +15,8 @@ export default function Register() {
   const [role, setRole] = useState<'owner' | 'driver'>('driver') // Estado para o perfil
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
+  // Estado para controlar a tela transicional de cadastro concluído
+  const [registerSuccess, setRegisterSuccess] = useState(false)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,6 +29,7 @@ export default function Register() {
       return
     }
 
+    // Realiza o cadastro enviando 'admin' ou 'driver' no metadata de acordo com a tabela profiles do dossiê
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -32,15 +37,39 @@ export default function Register() {
         data: {
           full_name: fullName,
           whatsapp: whatsapp,
-          role: role, // Enviando a escolha para o banco
+          role: role === 'owner' ? 'admin' : 'driver',
         },
       },
     })
 
     if (error) {
       setMessage("❌ " + error.message)
+      setLoading(false)
+      return
+    }
+
+    // Login automático imediato pós-cadastro para garantir sessão e ótima UX
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+
+    if (loginError) {
+      // Caso a confirmação de e-mail por link esteja habilitada nas configurações do Supabase
+      setMessage("✅ Cadastro efetuado! Redirecionando para login...")
+      setTimeout(() => {
+        router.push("/login")
+      }, 3000)
     } else {
-      setMessage("✅ Sucesso!")
+      // Login bem-sucedido. Ativa overlay visual e redireciona direto para o painel de destino
+      setRegisterSuccess(true)
+      setTimeout(() => {
+        if (role === 'owner') {
+          router.push("/dashboard/admin")
+        } else {
+          router.push("/dashboard/driver")
+        }
+      }, 2500)
     }
     setLoading(false)
   }
@@ -109,6 +138,27 @@ export default function Register() {
           )}
         </form>
       </div>
+
+      {/* TELA TRANSICIONAL DE SUCESSO COM LOGIN AUTOMÁTICO */}
+      {registerSuccess && (
+        <div className="fixed inset-0 z-[500] bg-[#020617] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
+          <div className="glass max-w-sm w-full p-8 rounded-[40px] border border-white/10 shadow-2xl text-center space-y-6">
+            <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 animate-bounce">
+              🎉
+            </div>
+            <div>
+              <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white leading-none">Cadastro Concluído!</h3>
+              <p className="text-orange-500 text-[9px] font-black uppercase tracking-[3px] italic mt-2 leading-none">Sessão Iniciada</p>
+            </div>
+            <p className="text-white/60 text-xs leading-relaxed font-semibold">
+              Sua conta foi criada. Estamos preparando o painel de {role === 'owner' ? 'Patrão' : 'Motorista'} para você...
+            </p>
+            <div className="flex justify-center pt-2">
+              <div className="w-8 h-8 border-4 border-t-orange-500 border-white/10 rounded-full animate-spin" />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
