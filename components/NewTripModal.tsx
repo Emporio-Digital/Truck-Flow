@@ -120,7 +120,7 @@ export default function NewTripModal({ userId, companyId, onClose, onSuccess }: 
         
         <div className="flex justify-between items-start mb-6 md:mb-8">
           <div>
-            <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter leading-none">Nova Viagem</h2>
+            <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter leading-none">Nova Viagem / Diária</h2>
             <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2">Lançamento de Registro</p>
           </div>
           <button onClick={onClose} className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-white/40 hover:text-white transition-colors text-xl border border-white/10">✕</button>
