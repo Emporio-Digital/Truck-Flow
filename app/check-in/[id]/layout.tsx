@@ -18,12 +18,14 @@ export async function generateMetadata({ params }: { params: any }): Promise<Met
     if (id) {
       const { data, error } = await supabase
         .from("projects")
-        .select("name")
+        .select("name, address")
         .eq("id", id)
         .single()
 
       if (data?.name && !error) {
-        const descriptionText = `Check-In para a obra: ${data.name}.`
+        const descriptionText = data.address 
+          ? `Check-In para a obra: ${data.name} (${data.address}).`
+          : `Check-In para a obra: ${data.name}.`
         return {
           description: descriptionText,
           openGraph: {
