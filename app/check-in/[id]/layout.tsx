@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: any }): Promise<Met
         .single()
 
       if (data?.name && !error) {
-        const descriptionText = `Registro de entrada para a obra: ${data.name}.`
+        const descriptionText = `Check-In para a obra: ${data.name}.`
         return {
           description: descriptionText,
           openGraph: {
