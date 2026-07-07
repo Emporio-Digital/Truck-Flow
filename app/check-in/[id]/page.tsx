@@ -254,8 +254,20 @@ export default function PublicCheckInPage() {
         {/* Cabeçalho do Portal */}
         <div className="mb-8">
           <p className="text-orange-500 font-black tracking-[4px] text-[10px] uppercase mb-2 italic">Portal do Prestador</p>
-          <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-none">{project.name}</h2>
-          <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest mt-1 italic">{project.companies?.name || 'EG TruckFlow'}</p>
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-none">
+              {project.name}
+            </h2>
+            {project.address && (
+              <span 
+                title={project.address}
+                className="text-[10px] text-white/80 font-bold uppercase tracking-widest italic bg-white/5 px-2.5 py-1 rounded-xl border border-white/5 inline-flex items-center gap-1 max-w-[150px] md:max-w-[200px] truncate shrink-0"
+              >
+                📍 {project.address}
+              </span>
+            )}
+          </div>
+          <p className="text-white/80 text-[9px] font-bold uppercase tracking-widest mt-2 italic">{project.companies?.name || 'EG TruckFlow'}</p>
         </div>
 
         {/* Notificação do modelo de pagamento configurado pela obra */}

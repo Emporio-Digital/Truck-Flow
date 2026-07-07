@@ -1,40 +1,44 @@
 import { Metadata } from "next"
 import { supabase } from "@/lib/supabase"
 
+// Força o Next.js a sempre processar a requisição em tempo real no servidor, sem cachear
+export const dynamic = 'force-dynamic'
+
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }> | { id: string }
   children: React.ReactNode
 }
 
-// Essa função roda estritamente no servidor e monta a descrição para o WhatsApp
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = params
-
+export async function generateMetadata({ params }: { params: any }): Promise<Metadata> {
   try {
-    // Busca apenas o nome do projeto de forma cirúrgica e rápida
-    const { data, error } = await supabase
-      .from("projects")
-      .select("name")
-      .eq("id", id)
-      .single()
+    // Resolve o params caso esteja no Next.js 15 (onde params é uma Promise)
+    const resolvedParams = await params
+    const id = resolvedParams?.id
 
-    if (data?.name && !error) {
-      const descriptionText = `Registro de entrada para a obra: ${data.name}.`
-      return {
-        description: descriptionText,
-        openGraph: {
+    if (id) {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("name")
+        .eq("id", id)
+        .single()
+
+      if (data?.name && !error) {
+        const descriptionText = `Registro de entrada para a obra: ${data.name}.`
+        return {
           description: descriptionText,
-        },
-        twitter: {
-          description: descriptionText,
+          openGraph: {
+            description: descriptionText,
+          },
+          twitter: {
+            description: descriptionText,
+          }
         }
       }
     }
   } catch (err) {
-    // Silencioso: Se houver qualquer falha de rede ou banco, não quebra a página
+    // Silencioso se falhar
   }
 
-  // Fallback padrão idêntico ao original se algo falhar ou a obra não existir
   const fallbackText = "A revolução na gestão de frotas"
   return {
     description: fallbackText,
