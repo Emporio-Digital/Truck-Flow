@@ -115,7 +115,7 @@ export default function JobSitesPage() {
                       <h3 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-white leading-none mb-1.5 uppercase truncate pr-2 max-w-[190px] md:max-w-[290px]">
                         {project.name}
                       </h3>
-                      <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest italic leading-none">
+                      <p className="text-white/80 text-[9px] font-bold uppercase tracking-widest italic leading-none">
                         {project.address || 'Sem Endereço'}
                       </p>
                     </div>

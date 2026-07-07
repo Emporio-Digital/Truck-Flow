@@ -412,7 +412,7 @@ export default function DriverDashboard() {
               <>
                 <div className="flex justify-between items-start mb-8 text-left">
                   <div>
-                    <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo da Viagem</h2>
+                    <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Resumo</h2>
                     <p className="text-orange-500 text-[8px] font-black uppercase tracking-[3px] mt-2 italic">Comprovante Digital</p>
                   </div>
                   <button 
