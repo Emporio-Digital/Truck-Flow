@@ -141,22 +141,22 @@ export default function JobSitesPage() {
                     </div>
                   </div>
 
-                  {/* Linha de Botões: Menores e Lado a Lado */}
+                  {/* Linha de Botões Invertida: Relatório (Bege/Maior) e Copiar Link (Laranja/Menor) */}
                   <div className="flex gap-2">
+                    <button 
+                      onClick={() => router.push(`/dashboard/admin/portal/${project.id}`)}
+                      className="flex-[2] bg-[#F8F5F2] text-black font-black uppercase text-[10px] tracking-widest h-12 rounded-xl hover:opacity-90 transition-all active:scale-95 italic"
+                    >
+                      Relatório
+                    </button>
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText(`https://egtruckflow.com.br/check-in/${project.id}`)
                         setAlertMessage("Link de check-in copiado com sucesso!")
                       }}
-                      className="flex-[2] bg-white text-black font-black uppercase text-[9px] tracking-widest h-12 rounded-xl hover:bg-orange-500 transition-all active:scale-95 italic"
+                      className="flex-1 bg-orange-500 text-black font-black uppercase text-[9px] tracking-widest h-12 rounded-xl hover:bg-orange-600 transition-all active:scale-95 italic"
                     >
                       Copiar Link
-                    </button>
-                    <button 
-                      onClick={() => router.push(`/dashboard/admin/portal/${project.id}`)}
-                      className="flex-1 bg-white/5 text-white/60 font-black uppercase text-[9px] tracking-widest h-12 rounded-xl border border-white/10 hover:bg-white/10 transition-all active:scale-95 italic"
-                    >
-                      Relatório
                     </button>
                   </div>
                 </div>

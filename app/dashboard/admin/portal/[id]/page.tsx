@@ -17,37 +17,31 @@ export default function ProjectReportPage() {
   // Estado para substituir alertas padrão por alerta premium
   const [alertMessage, setAlertMessage] = useState<string | null>(null)
 
-  // Função auxiliar para obter a data de hoje no formato YYYY-MM-DD local
-  const getTodayDateString = () => {
-    const today = new Date()
-    const year = today.getFullYear()
-    const month = String(today.getMonth() + 1).padStart(2, "0")
-    const day = String(today.getDate()).padStart(2, "0")
-    return `${year}-${month}-${day}`
-  }
+  // Estados para o intervalo de datas (Padrão: Hoje)
+  const [startDate, setStartDate] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  });
+  const [endDate, setEndDate] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  });
 
-  const [filterDate, setFilterDate] = useState(getTodayDateString()) // Inicializa com a data de hoje
   const router = useRouter()
 
-  // Função de Busca com Filtro à Prova de Fuso Horário
-  const fetchEntries = async (date?: string) => {
-    let query = supabase
+  // Função de Busca com Filtro de Intervalo
+  const fetchEntries = async () => {
+    const startQuery = `${startDate}T00:00:00.000Z`
+    const endQuery = `${endDate}T23:59:59.999Z`
+
+    const { data } = await supabase
       .from('external_entries')
       .select('*')
       .eq('project_id', id)
+      .gte('created_at', startQuery)
+      .lte('created_at', endQuery)
       .order('created_at', { ascending: false })
 
-    if (date) {
-      // Converte a data local selecionada para o fuso horário ISO UTC exato
-      const startOfDay = new Date(`${date}T00:00:00`).toISOString()
-      const endOfDay = new Date(`${date}T23:59:59`).toISOString()
-      
-      query = query
-        .gte('created_at', startOfDay)
-        .lte('created_at', endOfDay)
-    }
-
-    const { data } = await query
     setEntries(data || [])
   }
 
@@ -62,17 +56,16 @@ export default function ProjectReportPage() {
       const { data: proj } = await supabase.from('projects').select('*').eq('id', id).single()
       setProject(proj)
 
-      // Busca registros filtrando pela data padrão (hoje)
-      await fetchEntries(getTodayDateString())
+      await fetchEntries()
       setLoading(false)
     }
     initData()
   }, [id, router])
 
-  // Dispara a busca toda vez que o patrão mudar a data
+  // Dispara a busca sempre que as datas mudarem
   useEffect(() => {
-    if (!loading) fetchEntries(filterDate)
-  }, [filterDate])
+    if (!loading) fetchEntries()
+  }, [startDate, endDate])
 
   // Função para forçar o download direto de imagens externas (Supabase Storage)
   const handleDownloadFile = async (imageUrl: string, filename: string) => {
@@ -137,34 +130,41 @@ export default function ProjectReportPage() {
             </div>
           </div>
 
-          {/* BARRA DE FILTRO NATIVA + CARD QUADRADO DO TOTAL */}
-          <div className="flex items-start gap-3 md:gap-4 w-full">
-            {/* Campo de Filtro */}
-            <div className="flex-1 bg-white/5 p-4 rounded-[24px] border border-white/5 flex flex-col md:flex-row items-center gap-4">
-              <div className="flex-1 w-full relative">
-                <p className="text-[8px] font-black uppercase text-orange-500 tracking-[2px] mb-2 ml-2 italic">Buscar por Data (Até 6 meses)</p>
+          {/* BARRA DE FILTRO DE DATA (INTERVALO) + CARD TOTAL COMBINADO */}
+          <div className="flex gap-3 mb-8 animate-in fade-in slide-in-from-top-3 duration-500 ease-out h-[84px]">
+            
+            {/* Card de Data Nude Premium */}
+            <div className="flex-1 grid grid-cols-2 bg-[#F8F5F2] border border-white/20 rounded-[28px] relative overflow-hidden shadow-xl">
+              <div className="relative flex flex-col items-center justify-center border-r border-black/5 hover:bg-black/[0.03] transition-all px-4 text-center">
+                <span className="text-[9px] font-black text-orange-500 uppercase tracking-[2px] mb-1 italic">Início</span>
+                <span className="text-sm font-black text-[#020617] uppercase tracking-tight">
+                  {new Date(startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                </span>
                 <input 
-                  type="date" 
-                  value={filterDate}
-                  onChange={(e) => setFilterDate(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white font-black uppercase text-xs focus:border-orange-500 outline-none appearance-none"
+                  type="date" value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-30 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                   style={{ colorScheme: 'dark' }}
                 />
               </div>
-              {filterDate && (
-                <button 
-                  onClick={() => setFilterDate("")}
-                  className="w-full md:w-auto bg-white text-black font-black uppercase text-[9px] tracking-widest px-6 h-14 rounded-xl active:scale-95 transition-all animate-in fade-in duration-200"
-                >
-                  Limpar
-                </button>
-              )}
+              <div className="relative flex flex-col items-center justify-center hover:bg-black/[0.03] transition-all px-4 text-center">
+                <span className="text-[9px] font-black text-orange-500 uppercase tracking-[2px] mb-1 italic">Fim</span>
+                <span className="text-sm font-black text-[#020617] uppercase tracking-tight">
+                  {new Date(endDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                </span>
+                <input 
+                  type="date" value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-30 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                  style={{ colorScheme: 'dark' }}
+                />
+              </div>
             </div>
 
-            {/* Card Quadrado Perfeito (1x1) Fixo no Topo */}
-            <div className="w-28 h-28 md:w-32 md:h-32 bg-white/5 border border-white/5 rounded-[24px] flex flex-col items-center justify-center shrink-0 text-center select-none">
-              <p className="text-[8px] font-black uppercase text-orange-500 tracking-[1px] mb-1 italic">Total</p>
-              <span className="text-3xl md:text-4xl font-black italic tracking-tighter leading-none text-white">
+            {/* Card Total Nude Premium (Sincronizado) */}
+            <div className="w-[84px] bg-[#F8F5F2] border border-white/20 rounded-[28px] flex flex-col items-center justify-center shrink-0 text-center shadow-xl select-none">
+              <p className="text-[9px] font-black uppercase text-orange-500 tracking-[1px] mb-1 italic">Total</p>
+              <span className="text-2xl font-black italic tracking-tighter leading-none text-[#020617]">
                 {entries.length}
               </span>
             </div>

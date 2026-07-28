@@ -26,14 +26,15 @@ export default function AdminDashboard() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const router = useRouter()
-  // Estado para a data selecionada (Padrão: Hoje)
-  const [selectedDate, setSelectedDate] = useState(() => {
+  // Estados para o intervalo de datas (Padrão: Hoje)
+  const [startDate, setStartDate] = useState(() => {
     const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-  })
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  });
+  const [endDate, setEndDate] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  });
 
   // Função para forçar o download direto de imagens externas (Supabase Storage)
   const handleDownloadFile = async (imageUrl: string, filename: string) => {
@@ -57,8 +58,8 @@ export default function AdminDashboard() {
 
   // Estado para o tipo de filtro (Todos / Viagem / Gasto)
   const [typeFilter, setTypeFilter] = useState<'all' | 'viagem' | 'gasto'>('all')
-  // Estado para controlar a abertura do dropdown customizado
-  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false)
+  // Controle do Modal de Filtros Elegante
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false)
 
   const monthOptions = Array.from({ length: 6 }).map((_, i) => {
     const d = new Date(); d.setMonth(d.getMonth() - i);
@@ -72,14 +73,13 @@ export default function AdminDashboard() {
       const { data: prof } = await supabase.from('profiles').select('*, companies(*)').eq('id', user.id).single()
       setProfile(prof)
       if (prof?.company_id) {
-        const start = new Date(selectedYear, selectedMonth, 1).toISOString()
-        const end = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59).toISOString()
+        // Agora buscamos exatamente o intervalo selecionado, permitindo quebra de mês
+        const startQuery = `${startDate}T00:00:00.000Z`
+        const endQuery = `${endDate}T23:59:59.999Z`
         
-        // Busca as viagens e gastos APENAS do patrão logado (driver_id = user.id)
-        const { data: t } = await supabase.from('trips').select('*').eq('company_id', prof.company_id).eq('driver_id', user.id).gte('created_at', start).lte('created_at', end)
-        const { data: e } = await supabase.from('expenses').select('*').eq('company_id', prof.company_id).eq('driver_id', user.id).gte('created_at', start).lte('created_at', end)
+        const { data: t } = await supabase.from('trips').select('*').eq('company_id', prof.company_id).eq('driver_id', user.id).gte('created_at', startQuery).lte('created_at', endQuery)
+        const { data: e } = await supabase.from('expenses').select('*').eq('company_id', prof.company_id).eq('driver_id', user.id).gte('created_at', startQuery).lte('created_at', endQuery)
         
-        // A contagem da equipe (mini-card) continua puxando todos os motoristas da empresa
         const { data: d } = await supabase.from('profiles').select('id').eq('company_id', prof.company_id).eq('role', 'driver')
         
         setStats({ trips: t?.length || 0, expenses: e?.reduce((acc, curr) => acc + Number(curr.value), 0) || 0, drivers: d?.length || 0 })
@@ -89,7 +89,7 @@ export default function AdminDashboard() {
       }
     }
     fetchDashboardData()
-  }, [router, selectedMonth, selectedYear])
+  }, [router, startDate, endDate]) // Atualiza sempre que as datas mudarem
   // Executa a remoção direta no Supabase para o próprio patrão
   const executeDelete = async () => {
     if (!selectedTrip) return
@@ -113,28 +113,28 @@ export default function AdminDashboard() {
     }
   }
 
-  // Filtra os itens da timeline combinando a Data Selecionada e o Tipo de Filtro
+  // Filtra os itens da timeline combinando o Intervalo de Datas e o Tipo de Filtro
   const filteredItems = timelineItems.filter(item => {
     const itemDate = new Date(item.created_at);
     const itemDateString = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}-${String(itemDate.getDate()).padStart(2, '0')}`;
     
-    const matchesDate = itemDateString === selectedDate;
+    const matchesDate = itemDateString >= startDate && itemDateString <= endDate;
     const matchesType = typeFilter === 'all' || item.kind === typeFilter;
 
     return matchesDate && matchesType;
   });
 
-  // Calcula os totais estritamente para o dia selecionado (Zero Vazamento de outros dias)
+  // Calcula os totais para o intervalo selecionado
   const dayTripsCount = timelineItems.filter(item => {
     const itemDate = new Date(item.created_at);
     const itemDateString = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}-${String(itemDate.getDate()).padStart(2, '0')}`;
-    return itemDateString === selectedDate && item.kind === 'viagem';
+    return itemDateString >= startDate && itemDateString <= endDate && item.kind === 'viagem';
   }).length;
 
   const dayExpensesSum = timelineItems.filter(item => {
     const itemDate = new Date(item.created_at);
     const itemDateString = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}-${String(itemDate.getDate()).padStart(2, '0')}`;
-    return itemDateString === selectedDate && item.kind === 'gasto';
+    return itemDateString >= startDate && itemDateString <= endDate && item.kind === 'gasto';
   }).reduce((acc, curr) => acc + Number(curr.value), 0);
 
   if (!profile) return <div className="min-h-screen bg-[#020617] flex items-center justify-center text-white font-black italic tracking-widest">CARREGANDO...</div>
@@ -224,11 +224,11 @@ export default function AdminDashboard() {
 
         {/* Stats em Mini-Cards Lado a Lado (Mobile First) */}
         <div className="grid grid-cols-3 gap-3 mb-8">
-          <StatCard title="Viagens Dia" value={dayTripsCount} unit="total" />
+          <StatCard title="Viagens do Período" value={dayTripsCount} unit="total" />
           
           {/* Card de Gastos Customizado para Evitar Vazamentos */}
           <div className="glass p-4 rounded-[24px] border border-white/10 flex flex-col justify-between h-28 text-left overflow-hidden">
-            <p className="text-white/60 text-[8px] font-black uppercase tracking-[2px] leading-tight">Gastos Dia</p>
+            <p className="text-white/60 text-[8px] font-black uppercase tracking-[2px] leading-tight">Gastos do Período</p>
             <div className="flex flex-col">
               <span className="text-base sm:text-xl md:text-2xl font-black italic tracking-tighter leading-none text-orange-500 truncate" title={`R$ ${dayExpensesSum}`}>
                 R${dayExpensesSum}
@@ -239,85 +239,66 @@ export default function AdminDashboard() {
           <StatCard title="Equipe" value={stats.drivers} unit="membros" />
         </div>
 
-        {/* BARRA DE FILTROS HIGH-END (CLIQUE TOTAL & ALINHAMENTO MILIMÉTRICO) */}
-        <div className="grid grid-cols-2 gap-3 mb-6 animate-in fade-in slide-in-from-top-3 duration-500 ease-out">
+        {/* NOVA BARRA DE FILTRO DE DATA (EXPANDIDA) + BOTÃO DE FILTROS ADICIONAIS */}
+        <div className="flex gap-3 mb-8 animate-in fade-in slide-in-from-top-3 duration-500 ease-out h-[84px]">
           
-          {/* Card 1: Data de Lançamento (Clique em qualquer lugar) */}
-          <div className="relative active:scale-[0.97] transition-all bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:border-orange-500/30">
-            <div className="flex items-center gap-2.5">
-              <span className="text-xs">📅</span>
-              <span className="text-[10px] font-black tracking-wider text-white uppercase">
-                {new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+          {/* Card de Data Nude Premium */}
+          <div className="flex-1 grid grid-cols-2 bg-[#F8F5F2] border border-white/20 rounded-[28px] relative overflow-hidden shadow-xl">
+            <div className="relative flex flex-col items-center justify-center border-r border-black/5 hover:bg-black/[0.03] transition-all px-4 text-center">
+              <span className="text-[9px] font-black text-orange-500 uppercase tracking-[2px] mb-1 italic">Início</span>
+              <span className="text-sm font-black text-[#020617] uppercase tracking-tight">
+                {new Date(startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
               </span>
+              <input 
+                type="date" value={startDate}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    setStartDate(val);
+                    const [yyyy, mm] = val.split('-').map(Number);
+                    setSelectedMonth(mm - 1);
+                    setSelectedYear(yyyy);
+                  }
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-30 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                style={{ colorScheme: 'dark' }}
+              />
             </div>
-            <span className="text-[8px] text-orange-500">▼</span>
-            
-            {/* Input Nativo Oculto (Esticado para ocupar 100% da área de clique no Windows/Chrome) */}
-            <input 
-              type="date"
-              value={selectedDate}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val) {
-                  setSelectedDate(val);
-                  const [yyyy, mm] = val.split('-').map(Number);
-                  setSelectedMonth(mm - 1);
-                  setSelectedYear(yyyy);
-                }
-              }}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-30 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-              style={{ colorScheme: 'dark' }}
-            />
+            <div className="relative flex flex-col items-center justify-center hover:bg-black/[0.03] transition-all px-4 text-center">
+              <span className="text-[9px] font-black text-orange-500 uppercase tracking-[2px] mb-1 italic">Fim</span>
+              <span className="text-sm font-black text-[#020617] uppercase tracking-tight">
+                {new Date(endDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+              </span>
+              <input 
+                type="date" value={endDate}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    setEndDate(val);
+                    const [yyyy, mm] = val.split('-').map(Number);
+                    setSelectedMonth(mm - 1);
+                    setSelectedYear(yyyy);
+                  }
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-30 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                style={{ colorScheme: 'dark' }}
+              />
+            </div>
           </div>
 
-          {/* Card 2: Categoria do Filtro (Customizado Alinhado) */}
-          <div className="relative w-full">
-            <div 
-              onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-              className="active:scale-[0.97] transition-all bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:border-orange-500/30"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="text-xs">
-                  {typeFilter === 'all' ? '📑' : typeFilter === 'viagem' ? '🚛' : '💸'}
-                </span>
-                <span className="text-[10px] font-black tracking-wider text-white uppercase">
-                  {typeFilter === 'all' ? 'Todos' : typeFilter === 'viagem' ? 'Viagens' : 'Gastos'}
-                </span>
+          {/* Botão de Filtros Nude Premium */}
+          <button 
+            onClick={() => setIsFiltersModalOpen(true)}
+            className="relative w-[84px] bg-[#F8F5F2] text-[#020617] rounded-[28px] flex flex-col items-center justify-center gap-1 shadow-xl active:scale-90 transition-all hover:bg-orange-500 hover:text-white group border border-white/20 shrink-0"
+          >
+            <span className="text-xl group-hover:scale-110 transition-transform">⚙️</span>
+            <span className="text-[8px] font-black uppercase tracking-tighter">Filtros</span>
+            {typeFilter !== 'all' && (
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-orange-500 text-white border-[3px] border-[#F8F5F2] rounded-full flex items-center justify-center text-[10px] font-black shadow-lg animate-bounce">
+                !
               </div>
-              <span className={`text-[8px] text-orange-500 transition-transform duration-300 ${isTypeDropdownOpen ? 'rotate-180' : 'rotate-0'}`}>▼</span>
-            </div>
-
-            {/* Menu de Opções Escuro (Drop-down com Largura Idêntica ao Card) */}
-            {isTypeDropdownOpen && (
-              <>
-                {/* Fechar ao clicar fora */}
-                <div className="fixed inset-0 z-40" onClick={() => setIsTypeDropdownOpen(false)} />
-                
-                {/* Caixa de Opções Alinhada perfeitamente nas laterais */}
-                <div className="absolute top-full left-0 w-full mt-2 bg-[#020617] border border-white/10 rounded-2xl p-2 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <button
-                    onClick={() => { setTypeFilter('all'); setIsTypeDropdownOpen(false); }}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2.5 transition-all ${typeFilter === 'all' ? 'bg-orange-500 text-black' : 'text-white/80 hover:bg-white/5'}`}
-                  >
-                    📑 Todos
-                  </button>
-                  <button
-                    onClick={() => { setTypeFilter('viagem'); setIsTypeDropdownOpen(false); }}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2.5 transition-all ${typeFilter === 'viagem' ? 'bg-orange-500 text-black' : 'text-white/80 hover:bg-white/5'}`}
-                  >
-                    🚛 Viagens
-                  </button>
-                  <button
-                    onClick={() => { setTypeFilter('gasto'); setIsTypeDropdownOpen(false); }}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2.5 transition-all ${typeFilter === 'gasto' ? 'bg-orange-500 text-black' : 'text-white/80 hover:bg-white/5'}`}
-                  >
-                    💸 Gastos
-                  </button>
-                </div>
-              </>
             )}
-          </div>
-          
+          </button>
         </div>
 
         {/* LISTAGEM DOS ITENS FILTRADOS */}
@@ -725,6 +706,57 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* MODAL DE FILTROS FLUTUANTE (HOME PATRÃO) */}
+      <div className={`fixed inset-0 z-[600] flex items-end justify-center p-4 pb-4 transition-all duration-500 ${isFiltersModalOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsFiltersModalOpen(false)} />
+        
+        <div className={`relative w-full max-w-md bg-[#F8F5F2] rounded-[48px] p-7 shadow-[0_20px_80px_rgba(0,0,0,0.5)] transition-all duration-500 ease-out ${isFiltersModalOpen ? 'translate-y-0 scale-100' : 'translate-y-20 scale-95 opacity-0'}`}>
+          <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-8" />
+          
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-[#020617]">Filtrar Atividade</h2>
+            <button onClick={() => setIsFiltersModalOpen(false)} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">✕</button>
+          </div>
+
+          <div className="space-y-8">
+            <div>
+              <p className="text-[10px] font-black uppercase text-slate-600 tracking-[2px] mb-4 ml-1">Tipo de Registro</p>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { id: 'all', label: 'Todos', icon: '📑' },
+                  { id: 'viagem', label: 'Viagens', icon: '🚛' },
+                  { id: 'gasto', label: 'Gastos', icon: '💸' }
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setTypeFilter(t.id as any)}
+                    className={`flex flex-col items-center justify-center p-4 rounded-3xl border-2 transition-all ${typeFilter === t.id ? 'border-orange-500 bg-orange-50' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                  >
+                    <span className="text-xl mb-1">{t.icon}</span>
+                    <span className={`text-[9px] font-black uppercase ${typeFilter === t.id ? 'text-orange-600' : 'text-slate-600'}`}>{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button 
+                onClick={() => setTypeFilter('all')}
+                className="flex-1 py-5 rounded-3xl font-black uppercase tracking-widest text-[11px] text-slate-700 hover:bg-slate-50 transition-all border border-slate-100"
+              >
+                Limpar Filtros
+              </button>
+              <button 
+                onClick={() => setIsFiltersModalOpen(false)}
+                className="flex-[2] py-5 rounded-3xl font-black uppercase tracking-widest text-[11px] bg-orange-500 text-white shadow-[0_10px_30px_rgba(249,115,22,0.3)] active:scale-95 transition-all"
+              >
+                Aplicar Filtros
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   )
 }
