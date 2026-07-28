@@ -35,7 +35,7 @@ export default function PublicCheckInPage() {
     fetchProjectData()
   }, [id])
 
-  // Lógica matemática do Carimbo Digital (Watermark) e Compressão
+  // Lógica matemática do Carimbo Digital (Watermark) e Compressão Otimizada
   const processImage = async (file: File, projectName: string): Promise<Blob> => {
     return new Promise((resolve) => {
       const reader = new FileReader()
@@ -47,36 +47,40 @@ export default function PublicCheckInPage() {
           const canvas = document.createElement('canvas')
           const ctx = canvas.getContext('2d')
 
-          // Mantém a proporção e resolução da foto capturada
-          canvas.width = img.width
-          canvas.height = img.height
+          // --- REDIMENSIONAMENTO INTELIGENTE ---
+          const MAX_WIDTH = 1200 
+          let width = img.width
+          let height = img.height
+
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width)
+            width = MAX_WIDTH
+          }
+
+          canvas.width = width
+          canvas.height = height
+          // --------------------------------------
 
           if (ctx) {
-            // Desenha a imagem original no canvas
-            ctx.drawImage(img, 0, 0)
+            ctx.drawImage(img, 0, 0, width, height)
 
-            // Formatação oficial de data e hora de Brasília
             const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-
-            // Calcula o tamanho da fonte proporcional à resolução da imagem (2.5% da largura)
             const fontSize = Math.max(20, canvas.width * 0.025)
             ctx.font = `bold ${fontSize}px Inter, sans-serif`
 
-            // Desenha a barra escura de fundo na base da foto para contraste da letra
             const barHeight = fontSize * 3
-            ctx.fillStyle = 'rgba(2, 6, 23, 0.85)' // Fundo escuro profundo
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.85)'
             ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight)
 
-            // Injeta o Carimbo Digital Incontestável
-            ctx.fillStyle = '#FFFFFF' // Texto principal em branco
+            ctx.fillStyle = '#FFFFFF'
             ctx.fillText(`OBRA: ${projectName.toUpperCase()}`, canvas.width * 0.04, canvas.height - (barHeight * 0.55))
             
-            ctx.fillStyle = '#F97316' // Timestamp emHighway Orange
-            ctx.fillText(`REGISTRO AUDITADO: ${timestamp}`, canvas.width * 0.04, canvas.height - (barHeight * 0.22))
+            ctx.fillStyle = '#F97316'
+            ctx.fillText(`Check-in: ${timestamp}`, canvas.width * 0.04, canvas.height - (barHeight * 0.22))
           }
 
-          // Converte para JPEG com compressão de 80% para economizar internet do motorista
-          canvas.toBlob((blob) => resolve(blob as Blob), 'image/jpeg', 0.8)
+          // Salva em JPEG com 70% de qualidade (Equilíbrio perfeito peso/nitidez)
+          canvas.toBlob((blob) => resolve(blob as Blob), 'image/jpeg', 0.7)
         }
       }
     })
@@ -144,7 +148,7 @@ export default function PublicCheckInPage() {
   // TELA DE SUCESSO DO MOTORISTA (EXTRATO PREMIUM + CONVITE MARKETING VIRAL)
   if (success) {
     return (
-      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 md:p-10 text-white text-center pt-24 pb-12 overflow-y-auto">
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-start p-4 md:p-10 text-white text-center pt-32 pb-12 overflow-y-auto">
         <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500 space-y-6">
           
           {/* COMPROVANTE DIGITAL (TICKET PRETO PREMIUM) */}

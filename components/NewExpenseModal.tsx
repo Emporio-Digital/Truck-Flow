@@ -23,6 +23,7 @@ export default function NewExpenseModal({ userId, companyId, onClose, onSuccess 
   // Categorias baseadas no dossiê
   const categories = ["Combustível", "Borracharia", "Outros"]
 
+  // Lógica de Processamento de Comprovante Financeiro Otimizada
   const processImage = async (file: File): Promise<Blob> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -34,33 +35,38 @@ export default function NewExpenseModal({ userId, companyId, onClose, onSuccess 
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           
-          // Mantém a proporção e resolução real da foto capturada
-          canvas.width = img.width;
-          canvas.height = img.height;
+          // --- LIMITE DE RESOLUÇÃO PARA ECONOMIA DE STORAGE ---
+          const MAX_WIDTH = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          // ----------------------------------------------------
           
           if (ctx) {
-            // Desenha a imagem original no canvas
-            ctx.drawImage(img, 0, 0);
+            // Desenha o recibo já redimensionado
+            ctx.drawImage(img, 0, 0, width, height);
             
-            // Formatação oficial de data e hora de Brasília
             const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-            
-            // Tamanho da fonte proporcional à largura da imagem (2.5% da largura)
             const fontSize = Math.max(20, canvas.width * 0.025);
             ctx.font = `bold ${fontSize}px Inter, sans-serif`;
             
-            // Desenha a barra escura de fundo na base da foto para contraste absoluto (Mesmo padrão slate-950)
             const barHeight = fontSize * 3;
-            ctx.fillStyle = 'rgba(2, 6, 23, 0.85)'; // Fundo escuro profundo
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.85)';
             ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
             
-            // Injeta o Carimbo Digital Incontestável (Apenas Data e Hora para manter o padrão)
-            ctx.fillStyle = '#F97316'; // Timestamp em Highway Orange
-            ctx.fillText(`REGISTRO VERIFICADO: ${timestamp}`, canvas.width * 0.04, canvas.height - (barHeight * 0.38));
+            ctx.fillStyle = '#F97316';
+            ctx.fillText(`Comprovante: ${timestamp}`, canvas.width * 0.04, canvas.height - (barHeight * 0.38));
           }
           
-          // Converte para JPEG com compressão de 80% para economizar internet móvel
-          canvas.toBlob((blob) => resolve(blob as Blob), 'image/jpeg', 0.8);
+          // Converte para JPEG 0.7 (Alta legibilidade de textos com baixo peso de arquivo)
+          canvas.toBlob((blob) => resolve(blob as Blob), 'image/jpeg', 0.7);
         };
       };
     });
