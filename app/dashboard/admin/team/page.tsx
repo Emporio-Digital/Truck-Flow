@@ -268,8 +268,7 @@ export default function MyTeamPage() {
             <div 
               key={`${item.kind}-${item.id}`} 
               onClick={() => {
-                setIsEmployeeDropdownOpen(false);
-                setIsTypeDropdownOpen(false);
+                
                 setSelectedTrip(item);
               }} 
               className="relative group active:scale-[0.98] transition-all cursor-pointer mb-4"
