@@ -67,8 +67,8 @@ export default function DriverDashboard() {
       
       if (prof?.company_id) {
         // Agora buscamos exatamente o intervalo selecionado
-        const startQuery = `${startDate}T00:00:00.000Z`
-        const endQuery = `${endDate}T23:59:59.999Z`
+        const startQuery = `${startDate}T00:00:00-03:00`
+        const endQuery = `${endDate}T23:59:59-03:00`
 
         // Busca todas as viagens do próprio motorista no intervalo
         const { data: t } = await supabase.from('trips')

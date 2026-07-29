@@ -31,8 +31,8 @@ export default function ProjectReportPage() {
 
   // Função de Busca com Filtro de Intervalo
   const fetchEntries = async () => {
-    const startQuery = `${startDate}T00:00:00.000Z`
-    const endQuery = `${endDate}T23:59:59.999Z`
+    const startQuery = `${startDate}T00:00:00-03:00`
+    const endQuery = `${endDate}T23:59:59-03:00`
 
     const { data } = await supabase
       .from('external_entries')

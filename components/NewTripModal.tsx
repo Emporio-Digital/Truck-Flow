@@ -106,7 +106,8 @@ export default function NewTripModal({ userId, companyId, onClose, onSuccess }: 
         destination: formData.destination.trim(),
         material: formData.material.trim(), // Voltando para o nome reconhecido pelo banco
         photo_url: photo_url, 
-        status: 'finalizada'
+        status: 'finalizada',
+created_at: new Date().toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' }).replace(' ', 'T') + '-03:00'
       }])
 
       if (error) throw error
@@ -170,26 +171,24 @@ export default function NewTripModal({ userId, companyId, onClose, onSuccess }: 
             <label className="text-[10px] font-black uppercase text-orange-500 ml-2 mb-2 block tracking-widest text-center md:text-left">Comprovação Visual (Opcional)</label>
             
             {!previewUrl ? (
-              <label className="flex flex-col items-center justify-center w-full h-24 bg-white/5 border-2 border-dashed border-white/10 rounded-[24px] cursor-pointer hover:border-orange-500/50 hover:bg-orange-500/5 transition-all">
-                <div className="flex flex-col items-center justify-center">
-                  <p className="text-[10px] font-black uppercase text-white/60 tracking-widest flex items-center gap-3">
-                    <span className="text-xl">📸</span> Tirar Foto do Local
-                  </p>
-                </div>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  capture="environment" 
-                  className="hidden" 
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setSelectedImage(file);
-                      setPreviewUrl(URL.createObjectURL(file));
-                    }
-                  }}
-                />
-              </label>
+              <div className="relative flex flex-col items-center justify-center w-full h-24 bg-white/5 border-2 border-dashed border-white/10 rounded-[24px] hover:border-orange-500/50 hover:bg-orange-500/5 transition-all overflow-hidden">
+  <p className="text-[10px] font-black uppercase text-white/60 tracking-widest flex items-center gap-3 pointer-events-none">
+    <span className="text-xl">📸</span> Tirar Foto do Local
+  </p>
+  <input 
+    type="file" 
+    accept="image/*" 
+    capture="environment" 
+    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+    onChange={(e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setSelectedImage(file);
+        setPreviewUrl(URL.createObjectURL(file));
+      }
+    }}
+  />
+</div>
             ) : (
               <div className="relative w-full h-48 rounded-3xl overflow-hidden border border-orange-500/50">
                 <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />

@@ -74,8 +74,8 @@ export default function AdminDashboard() {
       setProfile(prof)
       if (prof?.company_id) {
         // Agora buscamos exatamente o intervalo selecionado, permitindo quebra de mês
-        const startQuery = `${startDate}T00:00:00.000Z`
-        const endQuery = `${endDate}T23:59:59.999Z`
+        const startQuery = `${startDate}T00:00:00-03:00`
+        const endQuery = `${endDate}T23:59:59-03:00`
         
         const { data: t } = await supabase.from('trips').select('*').eq('company_id', prof.company_id).eq('driver_id', user.id).gte('created_at', startQuery).lte('created_at', endQuery)
         const { data: e } = await supabase.from('expenses').select('*').eq('company_id', prof.company_id).eq('driver_id', user.id).gte('created_at', startQuery).lte('created_at', endQuery)

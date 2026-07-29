@@ -101,7 +101,7 @@ export default function NewExpenseModal({ userId, companyId, onClose, onSuccess 
         value: parseFloat(formData.value.replace(',', '.')),
         description: formData.description,
         photo_url: publicUrl,
-        created_at: new Date().toISOString()
+        created_at: new Date().toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' }).replace(' ', 'T') + '-03:00'
       }]);
 
       if (error) throw error;
@@ -171,20 +171,24 @@ export default function NewExpenseModal({ userId, companyId, onClose, onSuccess 
           <div>
             <label className="text-[10px] font-black uppercase text-orange-500 ml-2 mb-2 block tracking-widest">Foto do Comprovante (Obrigatório)</label>
             {!previewUrl ? (
-              <label className="flex flex-col items-center justify-center w-full h-24 bg-white/5 border-2 border-dashed border-white/10 rounded-[24px] cursor-pointer hover:border-orange-500/50 transition-all">
-                <p className="text-[10px] font-black uppercase text-white/60 tracking-widest flex items-center gap-3">
-                  <span className="text-xl">📸</span> Bater Foto
-                </p>
-                <input type="file" accept="image/*" capture="environment" className="hidden" 
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setSelectedImage(file);
-                      setPreviewUrl(URL.createObjectURL(file));
-                    }
-                  }}
-                />
-              </label>
+              <div className="relative flex flex-col items-center justify-center w-full h-24 bg-white/5 border-2 border-dashed border-white/10 rounded-[24px] hover:border-orange-500/50 transition-all overflow-hidden">
+  <p className="text-[10px] font-black uppercase text-white/60 tracking-widest flex items-center gap-3 pointer-events-none">
+    <span className="text-xl">📸</span> Bater Foto
+  </p>
+  <input 
+    type="file" 
+    accept="image/*" 
+    capture="environment" 
+    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+    onChange={(e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setSelectedImage(file);
+        setPreviewUrl(URL.createObjectURL(file));
+      }
+    }}
+  />
+</div>
             ) : (
               <div className="relative w-full h-40 rounded-[24px] overflow-hidden border border-orange-500/50">
                 <img src={previewUrl} className="w-full h-full object-cover" alt="Comprovante" />
