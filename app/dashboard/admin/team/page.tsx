@@ -80,8 +80,8 @@ export default function MyTeamPage() {
           const driverIds = teamDrivers.map(d => d.id)
 
           // Lógica de busca dinâmica baseada no intervalo selecionado
-          const startQuery = `${startDate}T00:00:00.000Z`
-          const endQuery = `${endDate}T23:59:59.999Z`
+          const startQuery = `${startDate}T00:00:00-03:00`
+          const endQuery = `${endDate}T23:59:59-03:00`
 
           const { data: t } = await supabase.from('trips')
             .select('*')
