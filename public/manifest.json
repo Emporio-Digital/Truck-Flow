@@ -2,7 +2,7 @@
   "name": "TruckFlow",
   "short_name": "TruckFlow",
   "description": "Central de controle e gestão logística - EG Empório Digital",
-  "start_url": "/login",
+  "start_url": "/dashboard/admin",
   "display": "standalone",
   "background_color": "#020617",
   "theme_color": "#F97316",
